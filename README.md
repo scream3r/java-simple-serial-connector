@@ -1,3 +1,5 @@
+jSSC-2.1.0 in development
+
 jSSC-0.9.0 Release version (21.12.2011)
 
 This version contains native libs for Windows(x86, x86-64), Linux(x86, x86-64), Solaris(x86, x86-64), Mac OS X(x86, x86-64, PPC, PPC64).
