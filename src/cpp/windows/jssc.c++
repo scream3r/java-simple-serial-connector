@@ -25,7 +25,9 @@
 #include <jni.h>
 #include <stdlib.h>
 #include <windows.h>
-#include "jssc_SerialNativeInterface.h"
+#include "../jssc_SerialNativeInterface.h"
+
+#include <iostream>
 
 /*
  * Port opening.
@@ -33,9 +35,15 @@
 JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName){
     char prefix[] = "\\\\.\\";
     const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
-    strcat(prefix, port);
+
+    //-> Since 2.1.0 string concat fix
+    char portFullName[strlen(prefix) + strlen(port) + 1];
+    strcpy(portFullName, prefix);
+    strcat(portFullName, port);
+    //<- Since 2.1.0
+
     HANDLE hComm;
-    hComm = CreateFile(prefix,
+    hComm = CreateFile(portFullName,
                        GENERIC_READ | GENERIC_WRITE,
                        0,
                        0,
@@ -43,6 +51,7 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, job
                        FILE_FLAG_OVERLAPPED,
                        0);
     env->ReleaseStringUTFChars(portName, port);
+
     //since 0.9 ->
     if(hComm == INVALID_HANDLE_VALUE){
     	DWORD errorValue = GetLastError();
