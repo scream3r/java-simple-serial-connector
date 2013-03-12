@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2011.
+ * © Alexey Sokolov (scream3r), 2010-2013.
  *
  * This file is part of jSSC.
  *
@@ -417,7 +417,7 @@ public class SerialPort {
     }
 
     /**
-     * Read Hex string from port (example: FF OA FF). Separator by default is a space
+     * Read Hex string from port (example: FF 0A FF). Separator by default is a space
      *
      * @param byteCount count of bytes for reading
      *
@@ -433,7 +433,7 @@ public class SerialPort {
     }
 
     /**
-     * Read Hex string from port with setted separator (example if separator is "::": FF::OA::FF)
+     * Read Hex string from port with setted separator (example if separator is "::": FF::0A::FF)
      *
      * @param byteCount count of bytes for reading
      *
@@ -507,6 +507,141 @@ public class SerialPort {
             }
         }
         return intBuffer;
+    }
+
+    private void waitBytesWithTimeout(String methodName, int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("waitBytesWithTimeout()");
+        boolean timeIsOut = true;
+        long startTime = System.currentTimeMillis();
+        while((System.currentTimeMillis() - startTime) < timeout){
+            if(getInputBufferBytesCount() >= byteCount){
+                timeIsOut = false;
+                break;
+            }
+            try {
+                Thread.sleep(0, 100);//Need to sleep some time to prevent high CPU loading
+            }
+            catch (InterruptedException ex) {
+                //Do nothing
+            }
+        }
+        if(timeIsOut){
+            throw new SerialPortTimeoutException(portName, methodName, timeout);
+        }
+    }
+
+    /**
+     * Read byte array from port
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return byte array with "byteCount" length
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public byte[] readBytes(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readBytes()");
+        waitBytesWithTimeout("readBytes()", byteCount, timeout);
+        return readBytes(byteCount);
+    }
+
+    /**
+     * Read string from port
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return byte array with "byteCount" length converted to String
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public String readString(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readString()");
+        waitBytesWithTimeout("readString()", byteCount, timeout);
+        return readString(byteCount);
+    }
+
+    /**
+     * Read Hex string from port (example: FF 0A FF). Separator by default is a space
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return byte array with "byteCount" length converted to Hexadecimal String
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public String readHexString(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readHexString()");
+        waitBytesWithTimeout("readHexString()", byteCount, timeout);
+        return readHexString(byteCount);
+    }
+
+    /**
+     * Read Hex string from port with setted separator (example if separator is "::": FF::0A::FF)
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return byte array with "byteCount" length converted to Hexadecimal String
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public String readHexString(int byteCount, String separator, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readHexString()");
+        waitBytesWithTimeout("readHexString()", byteCount, timeout);
+        return readHexString(byteCount, separator);
+    }
+
+    /**
+     * Read Hex String array from port
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return String array with "byteCount" length and Hexadecimal String values
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public String[] readHexStringArray(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readHexStringArray()");
+        waitBytesWithTimeout("readHexStringArray()", byteCount, timeout);
+        return readHexStringArray(byteCount);
+    }
+
+    /**
+     * Read int array from port
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return int array with values in range from 0 to 255
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public int[] readIntArray(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readIntArray()");
+        waitBytesWithTimeout("readIntArray()", byteCount, timeout);
+        return readIntArray(byteCount);
     }
 
     /**
@@ -609,7 +744,7 @@ public class SerialPort {
      * @since 0.8
      */
     public int[] readIntArray() throws SerialPortException {
-        checkPortOpened("readHex()");
+        checkPortOpened("readIntArray()");
         int byteCount = getInputBufferBytesCount();
         if(byteCount <= 0){
             return null;
