@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2011.
+ * © Alexey Sokolov (scream3r), 2010-2013.
  *
  * This file is part of jSSC.
  *
@@ -24,9 +24,11 @@
  */
 package jssc;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  *
@@ -53,6 +55,8 @@ public class SerialNativeInterface {
         String userHome = System.getProperty("user.home");
         String fileSeparator = System.getProperty("file.separator");
 
+        String javaLibPath = System.getProperty("java.library.path");//since 2.1.0
+
         if(osName.equals("Linux")){
             osName = "linux";
             osType = OS_LINUX;
@@ -76,10 +80,38 @@ public class SerialNativeInterface {
         else if(architecture.equals("amd64")){
             architecture = "x86_64";
         }
+        else if(architecture.equals("arm")) {//since 2.1.0
+            String floatStr = "sf";
+            if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
+                floatStr = "hf";
+            }
+            else {
+                try {
+                    Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
+                    String buffer = "";
+                    while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
+                        if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
+                            floatStr = "hf";
+                            break;
+                        }
+                    }
+                    reader.close();
+                }
+                catch (Exception ex) {
+                    //Do nothing
+                }
+            }
+            architecture = "arm" + floatStr;
+        }
         
         libFolderPath = userHome + fileSeparator + ".jssc" + fileSeparator + osName;
         libName = "jSSC-" + libVersion + "_" + architecture;
         libName = System.mapLibraryName(libName);
+
+        if(libName.endsWith(".dylib")){//Since 2.1.0 MacOSX 10.8 fix
+            libName = libName.replace(".dylib", ".jnilib");
+        }
 
         boolean loadLib = false;
 
