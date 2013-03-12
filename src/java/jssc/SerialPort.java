@@ -140,7 +140,12 @@ public class SerialPort {
         if(portOpened){
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_ALREADY_OPENED);
         }
-        portHandle = serialInterface.openPort(portName);
+        if(portName != null){
+            portHandle = serialInterface.openPort(portName);
+        }
+        else {
+            portHandle = -2;//->Since 2.1.0 NULL port name fix
+        }
         //since 0.9.0 ->
         if(portHandle == -1){
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_BUSY);
