@@ -113,7 +113,19 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
         //<- since 0.8
 
         if(SetCommState(hComm, dcb)){
-            returnValue = JNI_TRUE;
+
+        	//-> Since 2.1.0 previously setted timeouts by another application should be cleared
+        	COMMTIMEOUTS *lpCommTimeouts = new COMMTIMEOUTS();
+        	lpCommTimeouts->ReadIntervalTimeout = 0;
+        	lpCommTimeouts->ReadTotalTimeoutConstant = 0;
+        	lpCommTimeouts->ReadTotalTimeoutMultiplier = 0;
+        	lpCommTimeouts->WriteTotalTimeoutConstant = 0;
+        	lpCommTimeouts->WriteTotalTimeoutMultiplier = 0;
+        	if(SetCommTimeouts(hComm, lpCommTimeouts)){
+        		returnValue = JNI_TRUE;
+        	}
+        	delete lpCommTimeouts;
+        	//<- Since 2.1.0
         }
     }
     delete dcb;
