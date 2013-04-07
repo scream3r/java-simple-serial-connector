@@ -21,6 +21,9 @@
  *
  * e-mail: scream3r.org@gmail.com
  * web-site: http://scream3r.org | http://code.google.com/p/java-simple-serial-connector/
+ * 
+ * Original implementation by Alexey Sokolov (scream3r).
+ * This file modified by Charles Hache <chache@brood.ca>
  */
 package jssc;
 
@@ -32,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -103,15 +108,13 @@ public class SerialPortList {
             TreeSet<String> portsTree = new TreeSet<String>();
             ArrayList<String> portsList = new ArrayList<String>();
             String buffer = "";
+            Pattern linuxRegex = Pattern.compile("((ttyS|ttyUSB|ttyACM|rfcomm)[0-9]{1,3})");
             while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
-                if(buffer.matches(".*(ttyS|ttyUSB)[0-9]{1,3}.*")){
-                    String[] tmp = buffer.split(" ");
-                    for(String value : tmp){
-                        if(value.matches("(ttyS|ttyUSB)[0-9]{1,3}")){
-                            portsTree.add("/dev/" + value);
-                        }
-                    }
+            	Matcher matcher = linuxRegex.matcher(buffer);
+            	if (matcher.find()) {
+                    portsTree.add("/dev/" + matcher.group(1));
                 }
+
             }
             for(String portName : portsTree){
                 SerialPort serialPort = new SerialPort(portName);
@@ -151,8 +154,9 @@ public class SerialPortList {
             if(files.length > 0){
                 TreeSet<String> portsTree = new TreeSet<String>();
                 ArrayList<String> portsList = new ArrayList<String>();
+                Pattern solarisRegex = Pattern.compile("[0-9]*|[a-z]*");
                 for(File file : files){
-                    if(!file.isDirectory() && !file.isFile() && file.getName().matches("[0-9]*|[a-z]*")){
+                    if(!file.isDirectory() && !file.isFile() && solarisRegex.matcher(file.getName()).find()){
                         portsTree.add("/dev/term/" + file.getName());
                     }
                 }
@@ -178,8 +182,9 @@ public class SerialPortList {
             if(files.length > 0){
                 TreeSet<String> portsTree = new TreeSet<String>();
                 ArrayList<String> portsList = new ArrayList<String>();
+                Pattern macRegex = Pattern.compile("tty\\.(serial|usbserial|usbmodem).*");
                 for(File file : files){
-                    if(!file.isDirectory() && !file.isFile() && file.getName().matches("tty.(serial.*|usbserial.*)")){
+                    if(!file.isDirectory() && !file.isFile() && macRegex.matcher(file.getName()).find()){
                         portsTree.add("/dev/" + file.getName());
                     }
                 }
