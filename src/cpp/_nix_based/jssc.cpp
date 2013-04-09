@@ -399,6 +399,9 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_purgePort
 /* Closing the port */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_closePort
   (JNIEnv *env, jobject object, jint portHandle){
+#if defined TIOCNXCL && !defined __SunOS
+    ioctl(portHandle, TIOCNXCL);//since 2.1.0 Clear exclusive port access on closing
+#endif
     return close(portHandle) == 0 ? JNI_TRUE : JNI_FALSE;
 }
 
