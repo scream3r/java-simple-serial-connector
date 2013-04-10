@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2011.
+ * © Alexey Sokolov (scream3r), 2010-2013.
  *
  * This file is part of jSSC.
  *
@@ -36,11 +36,11 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, job
     char prefix[] = "\\\\.\\";
     const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
 
-    //-> Since 2.1.0 string concat fix
+    //since 2.1.0 -> string concat fix
     char portFullName[strlen(prefix) + strlen(port) + 1];
     strcpy(portFullName, prefix);
     strcat(portFullName, port);
-    //<- Since 2.1.0
+    //<- since 2.1.0
 
     HANDLE hComm;
     hComm = CreateFile(portFullName,
@@ -114,7 +114,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
 
         if(SetCommState(hComm, dcb)){
 
-        	//-> Since 2.1.0 previously setted timeouts by another application should be cleared
+        	//since 2.1.0 -> previously setted timeouts by another application should be cleared
         	COMMTIMEOUTS *lpCommTimeouts = new COMMTIMEOUTS();
         	lpCommTimeouts->ReadIntervalTimeout = 0;
         	lpCommTimeouts->ReadTotalTimeoutConstant = 0;
@@ -125,7 +125,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
         		returnValue = JNI_TRUE;
         	}
         	delete lpCommTimeouts;
-        	//<- Since 2.1.0
+        	//<- since 2.1.0
         }
     }
     delete dcb;
