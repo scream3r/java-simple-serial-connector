@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -40,9 +41,33 @@ import java.util.TreeSet;
 public class SerialPortList {
 
     private static SerialNativeInterface serialInterface;
+    private static final Pattern PORTNAMES_REGEXP;
+    private static final String PORTNAMES_PATH;
 
     static {
         serialInterface = new SerialNativeInterface();
+        switch (SerialNativeInterface.getOsType()) {
+            case SerialNativeInterface.OS_LINUX: {
+                PORTNAMES_REGEXP = Pattern.compile("(ttyS|ttyUSB|ttyACM|ttyAMA)[0-9]{1,3}");
+                PORTNAMES_PATH = "/dev/";
+                break;
+            }
+            case SerialNativeInterface.OS_SOLARIS: {
+                PORTNAMES_REGEXP = Pattern.compile("[0-9]*|[a-z]*");
+                PORTNAMES_PATH = "/dev/term/";
+                break;
+            }
+            case SerialNativeInterface.OS_MAC_OS_X: {
+                PORTNAMES_REGEXP = Pattern.compile("tty.(serial|usbserial|usbmodem).*");
+                PORTNAMES_PATH = "/dev/";
+                break;
+            }
+            default: {
+                PORTNAMES_REGEXP = null;
+                PORTNAMES_PATH = null;
+                break;
+            }
+        }
     }
 
     //since 2.1.0 -> Fully rewrited port name comparator
@@ -138,7 +163,12 @@ public class SerialPortList {
      * with <b>zero</b> length will be returned (since jSSC-0.8 in previous versions null will be returned)
      */
     public static String[] getPortNames() {
-        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_LINUX){
+        //since 2.1.0 ->
+        if(PORTNAMES_PATH != null){
+            return getUnixBasedPortNames();
+        }
+        //<- since 2.1.0
+        /*if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_LINUX){
             return getLinuxPortNames();
         }
         else if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_SOLARIS){//since 0.9.0 ->
@@ -146,7 +176,7 @@ public class SerialPortList {
         }
         else if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_MAC_OS_X){
             return getMacOSXPortNames();
-        }//<-since 0.9.0
+        }//<-since 0.9.0*/
         String[] portNames = serialInterface.getSerialPortNames();
         if(portNames == null){
             return new String[]{};
@@ -155,6 +185,44 @@ public class SerialPortList {
         ports.addAll(Arrays.asList(portNames));
         return ports.toArray(new String[ports.size()]);
     }
+
+    /**
+     * Universal method for getting port names of _nix based systems
+     *
+     * @return
+     */
+    private static String[] getUnixBasedPortNames() {
+        String[] returnArray = new String[]{};
+        File dir = new File(PORTNAMES_PATH);
+        if(dir.exists() && dir.isDirectory()){
+            File[] files = dir.listFiles();
+            if(files.length > 0){
+                TreeSet<String> portsTree = new TreeSet<String>(comparator);
+                for(File file : files){
+                    String fileName = file.getName();
+                    if(!file.isDirectory() && !file.isFile() && PORTNAMES_REGEXP.matcher(fileName).find()){
+                        String portName = PORTNAMES_PATH + fileName;
+                        if(SerialNativeInterface.getOsType() ==  SerialNativeInterface.OS_LINUX){
+                            SerialPort serialPort = new SerialPort(portName);
+                            try {
+                                serialPort.openPort();
+                            }
+                            catch (SerialPortException ex) {
+                                if(!ex.getExceptionType().equals(SerialPortException.TYPE_PORT_BUSY)){
+                                    continue;
+                                }
+                            }
+                        }
+                        portsTree.add(portName);
+                    }
+                }
+                returnArray = portsTree.toArray(returnArray);
+            }
+        }
+        return returnArray;
+    }
+
+    
 
     /**
      * Get serial port names in Linux OS (This method was completely rewrited in 0.8-tb4)
