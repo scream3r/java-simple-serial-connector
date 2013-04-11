@@ -10,6 +10,7 @@ jSSC-2.1.0 in development
 * Rewrited comparator for sorting port names. Now it's a common comparator for Windows, Linux, Solaris and MacOS X
 * Added common  for Linux, Solaris, MacOS X method getUnixBasedPortNames() for listing serial ports
 * Added precompiled RegExp's for Linux, Solaris, MacOS X for more faster port listing
+* Added ttyACM, ttyAMA to Linux RegExp and tty.usbmodem to MacOS X RegExp
 
 jSSC-0.9.0 Release version (21.12.2011)
 
