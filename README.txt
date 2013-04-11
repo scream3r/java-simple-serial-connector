@@ -1,4 +1,4 @@
-jSSC-2.1.0 in development
+jSSC-2.2.0 in development
 
 * Added timeouts for read operations and SerialPortTimeoutException class for catching timeout exceptions
 * Added Raspberry Pi support Hard & Soft float
@@ -8,7 +8,7 @@ jSSC-2.1.0 in development
 * Fixed error with garbage reading in Windows using jSSC after another application used serial port. To prevent this effect COMMTIMEOUTS structure zeroing added to setParams() method
 * Fixed Linux error with exclusive access to serial port (TIOCEXCL). TIOCNXCL added to closePort() method for clearing exclusive access
 * Rewrited comparator for sorting port names. Now it's a common comparator for Windows, Linux, Solaris and MacOS X
-* Added common  for Linux, Solaris, MacOS X method getUnixBasedPortNames() for listing serial ports
+* Added common for Linux, Solaris, MacOS X method getUnixBasedPortNames() for listing serial ports
 * Added precompiled RegExp's for Linux, Solaris, MacOS X for more faster port listing
 * Added ttyACM, ttyAMA to Linux RegExp and tty.usbmodem to MacOS X RegExp
 
