@@ -1,5 +1,16 @@
 jSSC-2.1.0 in development
 
+* Added timeouts for read operations and SerialPortTimeoutException class for catching timeout exceptions
+* Added Raspberry Pi support Hard & Soft float
+* Fixed MacOS X 10.8 bug with native lib loading (*.dylib -> *.jnilib)
+* Fixed Windows native lib port name concatenation error
+* Null port name fix. If try to invoke method openPort() for SerialPort(null) object, exception TYPE_NULL_NOT_PERMITTED will be thrown
+* Fixed error with garbage reading in Windows using jSSC after another application used serial port. To prevent this effect COMMTIMEOUTS structure zeroing added to setParams() method
+* Fixed Linux error with exclusive access to serial port (TIOCEXCL). TIOCNXCL added to closePort() method for clearing exclusive access
+* Rewrited comparator for sorting port names. Now it's a common comparator for Windows, Linux, Solaris and MacOS X
+* Added common  for Linux, Solaris, MacOS X method getUnixBasedPortNames() for listing serial ports
+* Added precompiled RegExp's for Linux, Solaris, MacOS X for more faster port listing
+
 jSSC-0.9.0 Release version (21.12.2011)
 
 This version contains native libs for Windows(x86, x86-64), Linux(x86, x86-64), Solaris(x86, x86-64), Mac OS X(x86, x86-64, PPC, PPC64).
