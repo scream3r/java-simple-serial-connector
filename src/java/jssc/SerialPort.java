@@ -144,7 +144,7 @@ public class SerialPort {
             portHandle = serialInterface.openPort(portName);
         }
         else {
-            portHandle = -2;//->Since 2.1.0 NULL port name fix
+            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
         }
         //since 0.9.0 ->
         if(portHandle == -1){
