@@ -39,8 +39,11 @@ public class SerialPort {
     private boolean portOpened = false;
     private boolean maskAssigned = false;
     private boolean eventListenerAdded = false;
-    
 
+    //since 2.2.0 ->
+    private Method methodErrorOccurred = null;
+    //<- since 2.2.0
+    
     public static final int BAUDRATE_110 = 110;
     public static final int BAUDRATE_300 = 300;
     public static final int BAUDRATE_600 = 600;
@@ -982,6 +985,19 @@ public class SerialPort {
             eventListener = listener;
             eventThread = getNewEventThread();
             eventThread.setName("EventThread " + portName);
+            //since 2.2.0 ->
+            try {
+                Method method = eventListener.getClass().getMethod("errorOccurred", new Class[]{SerialPortException.class});
+                method.setAccessible(true);
+                methodErrorOccurred = method;
+            }
+            catch (SecurityException ex) {
+                //Do nothing
+            }
+            catch (NoSuchMethodException ex) {
+                //Do nothing
+            }
+            //<- since 2.2.0
             eventThread.start();
             eventListenerAdded = true;
         }
@@ -1029,6 +1045,7 @@ public class SerialPort {
                 }
             }
         }
+        methodErrorOccurred = null;
         eventListenerAdded = false;
         return true;
     }
@@ -1067,22 +1084,13 @@ public class SerialPort {
                     if(eventArray[i][0] > 0 && !threadTerminated){
                         eventListener.serialEvent(new SerialPortEvent(portName, eventArray[i][0], eventArray[i][1]));
                         //FIXME
-                        /*try {
-                            Class c = eventListener.getClass();
-
-                            Method[] methods = c.getMethods();
-                            for(Method method : methods){
-                                System.out.println(method);
+                        /*if(methodErrorOccurred != null){
+                            try {
+                                methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
                             }
-
-                            Class[] params = new Class[]{SerialPortException.class};
-                            Method method = c.getMethod("error", params);
-                            System.out.println(method);
-                            method.setAccessible(true);
-                            method.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
-                        }
-                        catch (Exception ex) {
-                            System.out.println(ex);
+                            catch (Exception ex) {
+                                System.out.println(ex);
+                            }
                         }*/
                     }
                 }
