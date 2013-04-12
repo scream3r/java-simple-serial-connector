@@ -24,6 +24,8 @@
  */
 package jssc;
 
+import java.lang.reflect.Method;
+
 /**
  *
  * @author scream3r
@@ -940,27 +942,7 @@ public class SerialPort {
      * @throws SerialPortException
      */
     public void addEventListener(SerialPortEventListener listener) throws SerialPortException {
-        checkPortOpened("addEventListener()");
-        if(!eventListenerAdded){
-            if(maskAssigned){
-                eventListener = listener;
-                eventThread = getNewEventThread();
-                eventThread.setName("EventThread " + portName);
-                eventThread.start();
-                eventListenerAdded = true;
-            }
-            else {
-                setEventsMask(MASK_RXCHAR);
-                eventListener = listener;
-                eventThread = getNewEventThread();
-                eventThread.setName("EventThread " + portName);
-                eventThread.start();
-                eventListenerAdded = true;
-            }
-        }
-        else {
-            throw new SerialPortException(portName, "addEventListener()", SerialPortException.TYPE_LISTENER_ALREADY_ADDED);
-        }
+        addEventListener(listener, MASK_RXCHAR, false);
     }
 
     /**
@@ -974,9 +956,29 @@ public class SerialPort {
      * @throws SerialPortException
      */
     public void addEventListener(SerialPortEventListener listener, int mask) throws SerialPortException {
+        addEventListener(listener, mask, true);
+    }
+
+    /**
+     * Internal method. Add event listener. Object of <b>"SerialPortEventListener"</b> type shall be sent
+     * to the method. This object shall be properly described, as it will be in
+     * charge for handling of occurred events. Also events mask shall be sent to
+     * this method, to do it use variables with prefix <b>"MASK_"</b> for example <b>"MASK_RXCHAR"</b>. If
+     * <b>overwriteMask == true</b> and mask has been already assigned it value will be rewrited by <b>mask</b>
+     * value, if <b>overwriteMask == false</b> and mask has been already assigned the new <b>mask</b> value will be ignored,
+     * if there is no assigned mask to this serial port the <b>mask</b> value will be used for setting it up in spite of
+     * <b>overwriteMask</b> value
+     *
+     * @see #setEventsMask(int) setEventsMask(int mask)
+     *
+     * @throws SerialPortException
+     */
+    private void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
         checkPortOpened("addEventListener()");
         if(!eventListenerAdded){
-            setEventsMask(mask);
+            if((maskAssigned && overwriteMask) || !maskAssigned) {
+                setEventsMask(mask);
+            }
             eventListener = listener;
             eventThread = getNewEventThread();
             eventThread.setName("EventThread " + portName);
@@ -1064,6 +1066,24 @@ public class SerialPort {
                 for(int i = 0; i < eventArray.length; i++){
                     if(eventArray[i][0] > 0 && !threadTerminated){
                         eventListener.serialEvent(new SerialPortEvent(portName, eventArray[i][0], eventArray[i][1]));
+                        //FIXME
+                        /*try {
+                            Class c = eventListener.getClass();
+
+                            Method[] methods = c.getMethods();
+                            for(Method method : methods){
+                                System.out.println(method);
+                            }
+
+                            Class[] params = new Class[]{SerialPortException.class};
+                            Method method = c.getMethod("error", params);
+                            System.out.println(method);
+                            method.setAccessible(true);
+                            method.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
+                        }
+                        catch (Exception ex) {
+                            System.out.println(ex);
+                        }*/
                     }
                 }
             }
