@@ -494,21 +494,25 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
 /* OK */
 /*
  * Reading data from the port
+ *
+ * Rewrited in 2.2.0 (using of termios structure for setting min count of bytes to read,
+ * it makes read operation blocking, like in Windows version, and prevent reading of garbage)
  */
 JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
   (JNIEnv *env, jobject object, jint portHandle, jint byteCount){
-#ifdef __SunOS
-    jbyte *lpBuffer = new jbyte[byteCount];//Need for CC compiler
+    termios *settings = new termios();
+    if(tcgetattr(portHandle, settings) == 0){
+        if(settings->c_cc[VMIN] != byteCount){
+            settings->c_cc[VMIN] = byteCount;
+            tcsetattr(portHandle, TCSANOW, settings);
+        }
+    }
+    delete settings;
+    jbyte *lpBuffer = new jbyte[byteCount];
     read(portHandle, lpBuffer, byteCount);
-#else
-    jbyte lpBuffer[byteCount];
-    read(portHandle, &lpBuffer, byteCount);
-#endif
     jbyteArray returnArray = env->NewByteArray(byteCount);
     env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
-#ifdef __SunOS
-    delete(lpBuffer);
-#endif
+    delete lpBuffer;
     return returnArray;
 }
 
