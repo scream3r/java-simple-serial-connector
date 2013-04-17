@@ -41,7 +41,7 @@
 #endif
 
 #include <jni.h>
-#include "jssc_SerialNativeInterface.h"
+#include "../jssc_SerialNativeInterface.h"
 
 //#include <iostream.h> //-lCstd use for Solaris linker
 
