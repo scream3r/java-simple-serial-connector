@@ -261,7 +261,7 @@ public class SerialNativeInterface {
      * 
      * @return handle of opened port or -1 if opening of the port was unsuccessful
      */
-    public native int openPort(String portName);
+    public native int openPort(String portName, boolean useTIOCEXCL, boolean invokedByPortList);
 
     /**
      * Setting the parameters of opened port
