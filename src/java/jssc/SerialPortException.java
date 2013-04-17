@@ -52,6 +52,10 @@ public class SerialPortException extends Exception {
      * @since 0.9.0
      */
     final public static String TYPE_PORT_NOT_FOUND = "Port not found";
+    /**
+     * @since 2.2.0
+     */
+    final public static String TYPE_PERMISSION_DENIED = "Permission denied";
 
     private String portName;
     private String methodName;
