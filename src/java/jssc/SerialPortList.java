@@ -193,6 +193,7 @@ public class SerialPortList {
                             SerialPort serialPort = new SerialPort(portName);
                             try {
                                 serialPort.openPort();
+                                serialPort.closePort();
                             }
                             catch (SerialPortException ex) {
                                 if(!ex.getExceptionType().equals(SerialPortException.TYPE_PORT_BUSY)){
