@@ -43,7 +43,7 @@
 #include <jni.h>
 #include "../jssc_SerialNativeInterface.h"
 
-//#include <iostream.h> //-lCstd use for Solaris linker
+#include <iostream> //-lCstd use for Solaris linker
 
 
 /* OK */
@@ -53,18 +53,33 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, job
     jint hComm;
     hComm = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
     if(hComm != -1){
-    #if defined TIOCEXCL && !defined __SunOS
-        ioctl(hComm, TIOCEXCL);//since 0.9
-    #endif
-        int flags = fcntl(hComm, F_GETFL, 0);
-        flags &= ~O_NDELAY;
-        fcntl(hComm, F_SETFL, flags);
+        //since 2.2.0 ->
+        termios *settings = new termios();
+        if(tcgetattr(hComm, settings) == 0){
+        //<- since 2.2.0
+        #if defined TIOCEXCL && !defined __SunOS
+            ioctl(hComm, TIOCEXCL);//since 0.9
+        #endif
+            int flags = fcntl(hComm, F_GETFL, 0);
+            flags &= ~O_NDELAY;
+            fcntl(hComm, F_SETFL, flags);
+        }
+        else {
+            hComm = -2;
+        }
+        delete settings;
     }
     else {//since 0.9 ->
         if(errno == EBUSY){//Port busy
             hComm = -1;
         }
         else if(errno == ENOENT){//Port not found
+            hComm = -2;
+        }
+        else if(errno == EACCES){//Permission denied
+            hComm = -3;
+        }
+        else {
             hComm = -2;
         }
     }//<- since 0.9
