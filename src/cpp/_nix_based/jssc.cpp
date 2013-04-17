@@ -43,12 +43,15 @@
 #include <jni.h>
 #include "../jssc_SerialNativeInterface.h"
 
-#include <iostream> //-lCstd use for Solaris linker
+//#include <iostream> //-lCstd use for Solaris linker
 
 
 /* OK */
-/* Port opening */
-JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName){
+/*
+ * Port opening
+ * In 2.2.0 added useTIOCEXCL and invokedByPortList
+ */
+JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName, jboolean useTIOCEXCL, jboolean invokedByPortList){
     const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
     jint hComm;
     hComm = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
@@ -58,11 +61,15 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, job
         if(tcgetattr(hComm, settings) == 0){
         //<- since 2.2.0
         #if defined TIOCEXCL && !defined __SunOS
-            ioctl(hComm, TIOCEXCL);//since 0.9
+            if(useTIOCEXCL == JNI_TRUE){//since 2.2.0
+                ioctl(hComm, TIOCEXCL);//since 0.9
+            }
         #endif
-            int flags = fcntl(hComm, F_GETFL, 0);
-            flags &= ~O_NDELAY;
-            fcntl(hComm, F_SETFL, flags);
+            if(invokedByPortList == JNI_FALSE){//since 2.2.0 (should not change any flags while using port list, because port can be opened by another application)
+                int flags = fcntl(hComm, F_GETFL, 0);
+                flags &= ~O_NDELAY;
+                fcntl(hComm, F_SETFL, flags);
+            }
         }
         else {
             hComm = -2;
@@ -75,13 +82,13 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, job
         }
         else if(errno == ENOENT){//Port not found
             hComm = -2;
-        }
+        }//-> since 2.2.0
         else if(errno == EACCES){//Permission denied
             hComm = -3;
         }
         else {
             hComm = -2;
-        }
+        }//<- since 2.2.0
     }//<- since 0.9
     env->ReleaseStringUTFChars(portName, port);
     return hComm;
