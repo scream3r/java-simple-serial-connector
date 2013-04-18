@@ -1,5 +1,7 @@
-jSSC-2.2.0 in development
+jSSC-2.3.0 in development
 
+* Added termios structure cheking op port opening, it helps separate real serial devices from others
+* Added new exception TYPE_PERMISSION_DENIED. It can be very useful for _nix based system if user have no permissions for using serial device
 * Added timeouts for read operations and SerialPortTimeoutException class for catching timeout exceptions
 * Added Raspberry Pi support Hard & Soft float
 * Fixed MacOS X 10.8 bug with native lib loading (*.dylib -> *.jnilib)
