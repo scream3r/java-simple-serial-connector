@@ -146,7 +146,7 @@ public class SerialPort {
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_ALREADY_OPENED);
         }
         if(portName != null){
-            portHandle = serialInterface.openPort(portName, true);
+            portHandle = serialInterface.openPort(portName, (System.getProperty("JSSC_NO_TIOCEXCL") == null && System.getProperty("jssc_no_tiocexcl") == null));//since 2.3.0 -> (if JSSC_NO_TIOCEXCL defined, exclusive lock for serial port will be disabled)
         }
         else {
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
