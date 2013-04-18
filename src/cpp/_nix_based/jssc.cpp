@@ -49,7 +49,8 @@
 /* OK */
 /*
  * Port opening
- * In 2.2.0 added useTIOCEXCL and invokedByPortList
+ * 
+ * In 2.2.0 added useTIOCEXCL
  */
 JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName, jboolean useTIOCEXCL){
     const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
