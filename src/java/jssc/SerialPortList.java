@@ -190,23 +190,13 @@ public class SerialPortList {
                     if(!file.isDirectory() && !file.isFile() && PORTNAMES_REGEXP.matcher(fileName).find()){
                         String portName = PORTNAMES_PATH + fileName;
                         if(SerialNativeInterface.getOsType() ==  SerialNativeInterface.OS_LINUX){
-                            SerialPort serialPort = new SerialPort(portName);
-                            //try {
-                                /*serialPort.openPort();
-                                serialPort.closePort();*/
-                                int portHandle = serialInterface.openPort(portName, false, true);
-                                if(portHandle < 0 && portHandle != -1){
-                                    continue;
-                                }
-                                else if(portHandle != -1) {
-                                    serialInterface.closePort(portHandle);
-                                }
-                            //}
-                            //catch (SerialPortException ex) {
-                            //    if(!ex.getExceptionType().equals(SerialPortException.TYPE_PORT_BUSY)){
-                            //        continue;
-                            //    }
-                            //}
+                            int portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
+                            if(portHandle < 0 && portHandle != -1){//If port handle == -1 it's mean that it's busy
+                                continue;
+                            }
+                            else if(portHandle != -1) {
+                                serialInterface.closePort(portHandle);
+                            }
                         }
                         portsTree.add(portName);
                     }
