@@ -259,13 +259,10 @@ public class SerialNativeInterface {
      *
      * @param portName name of port for opening
      * @param useTIOCEXCL enable/disable using of <b>TIOCEXCL</b>. Take effect only on *nix based systems.
-     * Ignored if invokedByPortList == true, and always igored on Windows
-     * @param invokedByPortList if <b>true</b> - open port only for checking handle, not for working.
-     * Take effect only on *nix based systems. If invokedByPortList == true value of <b>useTIOCEXCL</b> will be ignored
      * 
      * @return handle of opened port or -1 if opening of the port was unsuccessful
      */
-    public native int openPort(String portName, boolean useTIOCEXCL, boolean invokedByPortList);
+    public native int openPort(String portName, boolean useTIOCEXCL);
 
     /**
      * Setting the parameters of opened port

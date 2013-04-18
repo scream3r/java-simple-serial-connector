@@ -42,10 +42,10 @@ extern "C" {
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    openPort
- * Signature: (Ljava/lang/String;ZZ)I
+ * Signature: (Ljava/lang/String;Z)I
  */
 JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort
-  (JNIEnv *, jobject, jstring, jboolean, jboolean);
+  (JNIEnv *, jobject, jstring, jboolean);
 
 /*
  * Class:     jssc_SerialNativeInterface

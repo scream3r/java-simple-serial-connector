@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2011.
+ * © Alexey Sokolov (scream3r), 2010-2013.
  *
  * This file is part of jSSC.
  *
@@ -51,30 +51,28 @@
  * Port opening
  * In 2.2.0 added useTIOCEXCL and invokedByPortList
  */
-JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName, jboolean useTIOCEXCL, jboolean invokedByPortList){
+JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName, jboolean useTIOCEXCL){
     const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
     jint hComm;
     hComm = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
     if(hComm != -1){
-        //since 2.2.0 ->
+        //since 2.2.0 -> (check termios structure for separating real serial devices from others)
         termios *settings = new termios();
         if(tcgetattr(hComm, settings) == 0){
-        //<- since 2.2.0
         #if defined TIOCEXCL && !defined __SunOS
-            if(useTIOCEXCL == JNI_TRUE){//since 2.2.0
-                ioctl(hComm, TIOCEXCL);//since 0.9
+            if(useTIOCEXCL == JNI_TRUE){
+                ioctl(hComm, TIOCEXCL);
             }
         #endif
-            if(invokedByPortList == JNI_FALSE){//since 2.2.0 (should not change any flags while using port list, because port can be opened by another application)
-                int flags = fcntl(hComm, F_GETFL, 0);
-                flags &= ~O_NDELAY;
-                fcntl(hComm, F_SETFL, flags);
-            }
+            int flags = fcntl(hComm, F_GETFL, 0);
+            flags &= ~O_NDELAY;
+            fcntl(hComm, F_SETFL, flags);
         }
         else {
             hComm = -2;
         }
         delete settings;
+        //<- since 2.2.0
     }
     else {//since 0.9 ->
         if(errno == EBUSY){//Port busy
