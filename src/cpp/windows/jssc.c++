@@ -27,12 +27,14 @@
 #include <windows.h>
 #include "../jssc_SerialNativeInterface.h"
 
-#include <iostream>
+//#include <iostream>
 
 /*
  * Port opening.
+ *
+ * In 2.2.0 added useTIOCEXCL (not used only for compatibility with _nix version)
  */
-JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName){
+JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName, jboolean useTIOCEXCL){
     char prefix[] = "\\\\.\\";
     const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
 
