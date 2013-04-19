@@ -71,7 +71,7 @@ public class SerialPortList {
     }
 
     //since 2.1.0 -> Fully rewrited port name comparator
-    private static Comparator<String> comparator = new Comparator<String>() {
+    private static final Comparator<String> PORTNAMES_COMPARATOR = new Comparator<String>() {
 
         @Override
         public int compare(String valueA, String valueB) {
@@ -157,43 +157,130 @@ public class SerialPortList {
     //<-since 2.1.0
     
     /**
-     * Get sorted array of serial ports in the system
+     * Get sorted array of serial ports in the system using default settings:<br>
+     *
+     * <b>Search path</b><br>
+     * Windows - ""(always ignored)<br>
+     * Linux - "/dev/"<br>
+     * Solaris - "/dev/term/"<br>
+     * MacOSX - "/dev/"<br>
+     *
+     * <b>RegExp</b><br>
+     * Windows - ""<br>
+     * Linux - "(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm)[0-9]{1,3}"<br>
+     * Solaris - "[0-9]*|[a-z]*"<br>
+     * MacOSX - "tty.(serial|usbserial|usbmodem).*"<br>
      *
      * @return String array. If there is no ports in the system String[]
      * with <b>zero</b> length will be returned (since jSSC-0.8 in previous versions null will be returned)
      */
     public static String[] getPortNames() {
-        return getPortNames(PORTNAMES_PATH, PORTNAMES_REGEXP, comparator);
+        return getPortNames(PORTNAMES_PATH, PORTNAMES_REGEXP, PORTNAMES_COMPARATOR);
     }
 
     /**
-     * Get sorted array of serial ports in the system, located by setted <b>searchPath</b>.
-     * In Windows this method equals <b>getPortNames()</b>
+     * Get sorted array of serial ports in the system located on searchPath
      *
-     * @param searchPath Path for searching serial ports. The default search paths:<br>
+     * @param searchPath Path for searching serial ports <b>(not null)</b><br>
+     * The default search paths:<br>
      * Linux, MacOSX: <b>/dev/</b><br>
      * Solaris: <b>/dev/term/</b><br>
-     * Windows: ingored
+     * Windows: <b>this parameter ingored</b>
      *
      * @return String array. If there is no ports in the system String[]
      *
      * @since 2.3.0
      */
-    /*public static String[] getPortNames(String searchPath) {
-        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS){
-            return getPortNames();
-        }
-        return getUnixBasedPortNames(searchPath);
-    }*/
+    public static String[] getPortNames(String searchPath) {
+        return getPortNames(searchPath, PORTNAMES_REGEXP, PORTNAMES_COMPARATOR);
+    }
 
     /**
-     * Get sorted array of serial ports in the system
+     * Get sorted array of serial ports in the system matched pattern
      *
-     * @param searchPath Path for searching serial ports. The default search paths:<br>
+     * @param pattern RegExp pattern for matching port names <b>(not null)</b>
+     * 
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(Pattern pattern) {
+        return getPortNames(PORTNAMES_PATH, pattern, PORTNAMES_COMPARATOR);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system matched pattern
+     *
+     * @param comparator Comparator for sotring port names <b>(not null)</b>
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(Comparator comparator) {
+        return getPortNames(PORTNAMES_PATH, PORTNAMES_REGEXP, comparator);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system located on searchPath, matched pattern
+     *
+     * @param searchPath Path for searching serial ports <b>(not null)</b><br>
+     * The default search paths:<br>
      * Linux, MacOSX: <b>/dev/</b><br>
      * Solaris: <b>/dev/term/</b><br>
-     * Windows: ingored
+     * Windows: <b>this parameter ingored</b>
+     * @param pattern RegExp pattern for matching port names <b>(not null)</b>
      *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(String searchPath, Pattern pattern) {
+        return getPortNames(searchPath, pattern, PORTNAMES_COMPARATOR);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system located on searchPath and sorted by comparator
+     *
+     * @param searchPath Path for searching serial ports <b>(not null)</b><br>
+     * The default search paths:<br>
+     * Linux, MacOSX: <b>/dev/</b><br>
+     * Solaris: <b>/dev/term/</b><br>
+     * Windows: <b>this parameter ingored</b>
+     * @param comparator Comparator for sotring port names <b>(not null)</b>
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(String searchPath, Comparator comparator) {
+        return getPortNames(searchPath, PORTNAMES_REGEXP, comparator);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system matched pattern and sorted by comparator
+     *
+     * @param pattern RegExp pattern for matching port names <b>(not null)</b>
+     * @param comparator Comparator for sotring port names <b>(not null)</b>
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(Pattern pattern, Comparator comparator) {
+        return getPortNames(PORTNAMES_PATH, pattern, comparator);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system located on searchPath, matched pattern and sorted by comparator
+     *
+     * @param searchPath Path for searching serial ports <b>(not null)</b><br>
+     * The default search paths:<br>
+     * Linux, MacOSX: <b>/dev/</b><br>
+     * Solaris: <b>/dev/term/</b><br>
+     * Windows: <b>this parameter ingored</b>
+     * @param pattern RegExp pattern for matching port names <b>(not null)</b>
+     * @param comparator Comparator for sotring port names <b>(not null)</b>
      *
      * @return String array. If there is no ports in the system String[]
      *
