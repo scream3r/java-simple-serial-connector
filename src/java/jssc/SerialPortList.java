@@ -25,7 +25,6 @@
 package jssc;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -56,6 +55,11 @@ public class SerialPortList {
             case SerialNativeInterface.OS_MAC_OS_X: {
                 PORTNAMES_REGEXP = Pattern.compile("tty.(serial|usbserial|usbmodem).*");
                 PORTNAMES_PATH = "/dev/";
+                break;
+            }
+            case SerialNativeInterface.OS_WINDOWS: {
+                PORTNAMES_REGEXP = Pattern.compile("");
+                PORTNAMES_PATH = "";
                 break;
             }
             default: {
@@ -159,22 +163,12 @@ public class SerialPortList {
      * with <b>zero</b> length will be returned (since jSSC-0.8 in previous versions null will be returned)
      */
     public static String[] getPortNames() {
-        //since 2.1.0 ->
-        if(PORTNAMES_PATH != null){
-            return getUnixBasedPortNames(PORTNAMES_PATH);
-        }
-        //<- since 2.1.0
-        String[] portNames = serialInterface.getSerialPortNames();
-        if(portNames == null){
-            return new String[]{};
-        }
-        TreeSet<String> ports = new TreeSet<String>(comparator);
-        ports.addAll(Arrays.asList(portNames));
-        return ports.toArray(new String[ports.size()]);
+        return getPortNames(PORTNAMES_PATH, PORTNAMES_REGEXP, comparator);
     }
 
     /**
-     * Get sorted array of serial ports in the system. In Windows this method equals <b>getPortNames()</b>
+     * Get sorted array of serial ports in the system, located by setted <b>searchPath</b>.
+     * In Windows this method equals <b>getPortNames()</b>
      *
      * @param searchPath Path for searching serial ports. The default search paths:<br>
      * Linux, MacOSX: <b>/dev/</b><br>
@@ -185,36 +179,70 @@ public class SerialPortList {
      *
      * @since 2.3.0
      */
-    public static String[] getPortNames(String searchPath) {
+    /*public static String[] getPortNames(String searchPath) {
         if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS){
             return getPortNames();
         }
-        if(searchPath == null){
-            searchPath = "";
-        }
-        if(!searchPath.equals("") && !searchPath.endsWith("/")){
-            searchPath += "/";
-        }
-        System.out.println("Result search path: " + searchPath);
         return getUnixBasedPortNames(searchPath);
+    }*/
+
+    /**
+     * Get sorted array of serial ports in the system
+     *
+     * @param searchPath Path for searching serial ports. The default search paths:<br>
+     * Linux, MacOSX: <b>/dev/</b><br>
+     * Solaris: <b>/dev/term/</b><br>
+     * Windows: ingored
+     *
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(String searchPath, Pattern pattern, Comparator comparator) {
+        if(searchPath == null || pattern == null || comparator == null){
+            return new String[]{};
+        }
+        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS){
+            return getWindowsPortNames(pattern, comparator);
+        }
+        return getUnixBasedPortNames(searchPath, pattern, comparator);
+    }
+
+    /**
+     * Get serial port names in Windows
+     *
+     * @since 2.3.0
+     */
+    private static String[] getWindowsPortNames(Pattern pattern, Comparator comparator) {
+        String[] portNames = serialInterface.getSerialPortNames();
+        if(portNames == null){
+            return new String[]{};
+        }
+        TreeSet<String> ports = new TreeSet<String>(comparator);
+        for(String portName : portNames){
+            if(pattern.matcher(portName).find()){
+                ports.add(portName);
+            }
+        }
+        return ports.toArray(new String[ports.size()]);
     }
 
     /**
      * Universal method for getting port names of _nix based systems
-     *
-     * @return
      */
-    private static String[] getUnixBasedPortNames(String searchPath) {
+    private static String[] getUnixBasedPortNames(String searchPath, Pattern pattern, Comparator comparator) {
+        searchPath = (searchPath.equals("") ? searchPath : (searchPath.endsWith("/") ? searchPath : searchPath + "/"));
         String[] returnArray = new String[]{};
-        File dir = new File(/*PORTNAMES_PATH*/searchPath);
+        File dir = new File(searchPath);
         if(dir.exists() && dir.isDirectory()){
             File[] files = dir.listFiles();
             if(files.length > 0){
                 TreeSet<String> portsTree = new TreeSet<String>(comparator);
                 for(File file : files){
                     String fileName = file.getName();
-                    if(!file.isDirectory() && !file.isFile() && PORTNAMES_REGEXP.matcher(fileName).find()){
-                        String portName = /*PORTNAMES_PATH*/searchPath + fileName;
+                    if(!file.isDirectory() && !file.isFile() && pattern.matcher(fileName).find()){
+                        String portName = searchPath + fileName;
                         if(SerialNativeInterface.getOsType() ==  SerialNativeInterface.OS_LINUX){
                             int portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
                             if(portHandle < 0 && portHandle != -1){//If port handle == -1 it's mean that it's busy
