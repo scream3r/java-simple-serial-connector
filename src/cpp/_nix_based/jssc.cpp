@@ -70,7 +70,7 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, job
             fcntl(hComm, F_SETFL, flags);
         }
         else {
-            hComm = jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND;//-2;
+            hComm = jssc_SerialNativeInterface_ERR_INCORRECT_SERIAL_PORT;//-4;
         }
         delete settings;
         //<- since 2.2.0
