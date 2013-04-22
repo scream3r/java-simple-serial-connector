@@ -151,15 +151,18 @@ public class SerialPort {
         else {
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
         }
-        if(portHandle == SerialNativeInterface.ERR_PORT_BUSY){//since 0.9.0 ->
-            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_BUSY);
+        switch(portHandle) {
+            case SerialNativeInterface.ERR_PORT_BUSY:
+                throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_BUSY);
+            case SerialNativeInterface.ERR_PORT_NOT_FOUND:
+                throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_NOT_FOUND);
+            case SerialNativeInterface.ERR_PERMISSION_DENIED:
+                throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PERMISSION_DENIED);
+            case SerialNativeInterface.ERR_INCORRECT_SERIAL_PORT:
+                throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_INCORRECT_SERIAL_PORT);
+            default:
+                break;
         }
-        else if(portHandle == SerialNativeInterface.ERR_PORT_NOT_FOUND){
-            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_NOT_FOUND);
-        }//<- since 0.9.0
-        else if(portHandle == SerialNativeInterface.ERR_PERMISSION_DENIED){//since 2.2.0 ->
-            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PERMISSION_DENIED);
-        }//<- since 2.2.0
         portOpened = true;
         return true;
     }
