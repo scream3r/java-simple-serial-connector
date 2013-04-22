@@ -70,23 +70,23 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, job
             fcntl(hComm, F_SETFL, flags);
         }
         else {
-            hComm = -2;
+            hComm = jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND;//-2;
         }
         delete settings;
         //<- since 2.2.0
     }
     else {//since 0.9 ->
         if(errno == EBUSY){//Port busy
-            hComm = -1;
+            hComm = jssc_SerialNativeInterface_ERR_PORT_BUSY;//-1
         }
         else if(errno == ENOENT){//Port not found
-            hComm = -2;
+            hComm = jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND;//-2;
         }//-> since 2.2.0
         else if(errno == EACCES){//Permission denied
-            hComm = -3;
+            hComm = jssc_SerialNativeInterface_ERR_PERMISSION_DENIED;//-3;
         }
         else {
-            hComm = -2;
+            hComm = jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND;//-2;
         }//<- since 2.2.0
     }//<- since 0.9
     env->ReleaseStringUTFChars(portName, port);
