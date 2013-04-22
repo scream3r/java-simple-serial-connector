@@ -44,27 +44,33 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, job
     strcat(portFullName, port);
     //<- since 2.1.0
 
-    HANDLE hComm;
-    hComm = CreateFile(portFullName,
-                       GENERIC_READ | GENERIC_WRITE,
-                       0,
-                       0,
-                       OPEN_EXISTING,
-                       FILE_FLAG_OVERLAPPED,
-                       0);
+    HANDLE hComm = CreateFile(portFullName,
+                       	   	  GENERIC_READ | GENERIC_WRITE,
+                       	   	  0,
+                       	   	  0,
+                       	   	  OPEN_EXISTING,
+                       	   	  FILE_FLAG_OVERLAPPED,
+                       	   	  0);
     env->ReleaseStringUTFChars(portName, port);
 
-    //since 0.9 ->
-    if(hComm == INVALID_HANDLE_VALUE){
+    //since 2.3.0 ->
+    if(hComm != INVALID_HANDLE_VALUE){
+    	DCB *dcb = new DCB();
+    	if(!GetCommState(hComm, dcb)){
+    		hComm = (HANDLE)jssc_SerialNativeInterface_ERR_INCORRECT_SERIAL_PORT;//(-4)Incorrect serial port
+    	}
+    	delete dcb;
+    }
+    else {
     	DWORD errorValue = GetLastError();
     	if(errorValue == ERROR_ACCESS_DENIED){
-    		hComm = (HANDLE)-1;//Port busy
+    		hComm = (HANDLE)jssc_SerialNativeInterface_ERR_PORT_BUSY;//(-1)Port busy
     	}
     	else if(errorValue == ERROR_FILE_NOT_FOUND){
-    		hComm = (HANDLE)-2;//Port not found
+    		hComm = (HANDLE)jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND;//(-2)Port not found
     	}
     }
-    //<- since 0.9
+    //<- since 2.3.0
 #if defined(_X86_)
     return (jint)hComm;
 #elif defined(__x86_64)
