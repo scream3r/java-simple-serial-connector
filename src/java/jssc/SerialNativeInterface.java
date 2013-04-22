@@ -58,6 +58,10 @@ public class SerialNativeInterface {
      * @since 2.3.0
      */
     public static final int ERR_PERMISSION_DENIED = -3;
+    /**
+     * @since 2.3.0
+     */
+    public static final int ERR_INCORRECT_SERIAL_PORT = -4;
 
     static {
         String libFolderPath;

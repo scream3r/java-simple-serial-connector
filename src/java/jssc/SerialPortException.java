@@ -56,6 +56,10 @@ public class SerialPortException extends Exception {
      * @since 2.2.0
      */
     final public static String TYPE_PERMISSION_DENIED = "Permission denied";
+    /**
+     * @since 2.3.0
+     */
+    final public static String TYPE_INCORRECT_SERIAL_PORT = "Incorrect serial port";
 
     private String portName;
     private String methodName;

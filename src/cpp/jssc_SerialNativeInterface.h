@@ -45,6 +45,8 @@ extern "C" {
 #define jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND -2L
 #undef jssc_SerialNativeInterface_ERR_PERMISSION_DENIED
 #define jssc_SerialNativeInterface_ERR_PERMISSION_DENIED -3L
+#undef jssc_SerialNativeInterface_ERR_INCORRECT_SERIAL_PORT
+#define jssc_SerialNativeInterface_ERR_INCORRECT_SERIAL_PORT -4L
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    openPort
