@@ -330,14 +330,12 @@ public class SerialPortList {
                     String fileName = file.getName();
                     if(!file.isDirectory() && !file.isFile() && pattern.matcher(fileName).find()){
                         String portName = searchPath + fileName;
-                        if(SerialNativeInterface.getOsType() ==  SerialNativeInterface.OS_LINUX){
-                            int portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
-                            if(portHandle < 0 && portHandle != SerialNativeInterface.ERR_PORT_BUSY){//If port handle == -1 it's mean that it's busy
-                                continue;
-                            }
-                            else if(portHandle != -1) {
-                                serialInterface.closePort(portHandle);
-                            }
+                        int portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
+                        if(portHandle < 0 && portHandle != SerialNativeInterface.ERR_PORT_BUSY){
+                            continue;
+                        }
+                        else if(portHandle != SerialNativeInterface.ERR_PORT_BUSY) {
+                            serialInterface.closePort(portHandle);
                         }
                         portsTree.add(portName);
                     }
