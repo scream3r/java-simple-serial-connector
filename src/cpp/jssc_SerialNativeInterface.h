@@ -39,6 +39,12 @@ extern "C" {
 #define jssc_SerialNativeInterface_OS_SOLARIS 2L
 #undef jssc_SerialNativeInterface_OS_MAC_OS_X
 #define jssc_SerialNativeInterface_OS_MAC_OS_X 3L
+#undef jssc_SerialNativeInterface_ERR_PORT_BUSY
+#define jssc_SerialNativeInterface_ERR_PORT_BUSY -1L
+#undef jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND
+#define jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND -2L
+#undef jssc_SerialNativeInterface_ERR_PERMISSION_DENIED
+#define jssc_SerialNativeInterface_ERR_PERMISSION_DENIED -3L
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    openPort
