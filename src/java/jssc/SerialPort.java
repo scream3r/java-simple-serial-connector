@@ -151,13 +151,13 @@ public class SerialPort {
         else {
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
         }
-        if(portHandle == -1){//since 0.9.0 ->
+        if(portHandle == SerialNativeInterface.ERR_PORT_BUSY){//since 0.9.0 ->
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_BUSY);
         }
-        else if(portHandle == -2){
+        else if(portHandle == SerialNativeInterface.ERR_PORT_NOT_FOUND){
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_NOT_FOUND);
         }//<- since 0.9.0
-        else if(portHandle == -3){//since 2.2.0 ->
+        else if(portHandle == SerialNativeInterface.ERR_PERMISSION_DENIED){//since 2.2.0 ->
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PERMISSION_DENIED);
         }//<- since 2.2.0
         portOpened = true;

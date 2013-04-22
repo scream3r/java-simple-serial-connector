@@ -332,7 +332,7 @@ public class SerialPortList {
                         String portName = searchPath + fileName;
                         if(SerialNativeInterface.getOsType() ==  SerialNativeInterface.OS_LINUX){
                             int portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
-                            if(portHandle < 0 && portHandle != -1){//If port handle == -1 it's mean that it's busy
+                            if(portHandle < 0 && portHandle != SerialNativeInterface.ERR_PORT_BUSY){//If port handle == -1 it's mean that it's busy
                                 continue;
                             }
                             else if(portHandle != -1) {

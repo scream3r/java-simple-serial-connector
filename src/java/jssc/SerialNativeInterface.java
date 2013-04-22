@@ -46,6 +46,19 @@ public class SerialNativeInterface {
 
     private static int osType = -1;
 
+    /**
+     * @since 2.3.0
+     */
+    public static final int ERR_PORT_BUSY = -1;
+    /**
+     * @since 2.3.0
+     */
+    public static final int ERR_PORT_NOT_FOUND = -2;
+    /**
+     * @since 2.3.0
+     */
+    public static final int ERR_PERMISSION_DENIED = -3;
+
     static {
         String libFolderPath;
         String libName;
