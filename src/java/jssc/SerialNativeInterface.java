@@ -71,6 +71,11 @@ public class SerialNativeInterface {
         String architecture = System.getProperty("os.arch");
         String userHome = System.getProperty("user.home");
         String fileSeparator = System.getProperty("file.separator");
+        String tmpFolder = System.getProperty("java.io.tmpdir");
+
+        //since 2.3.0 ->
+        String libRootFolder = new File(userHome).canWrite() ? userHome : tmpFolder;
+        //<- since 2.3.0
 
         String javaLibPath = System.getProperty("java.library.path");//since 2.1.0
 
@@ -122,7 +127,7 @@ public class SerialNativeInterface {
             architecture = "arm" + floatStr;
         }
         
-        libFolderPath = userHome + fileSeparator + ".jssc" + fileSeparator + osName;
+        libFolderPath = libRootFolder + fileSeparator + ".jssc" + fileSeparator + osName;
         libName = "jSSC-" + libVersion + "_" + architecture;
         libName = System.mapLibraryName(libName);
 
