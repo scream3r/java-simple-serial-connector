@@ -330,7 +330,7 @@ public class SerialPortList {
                     String fileName = file.getName();
                     if(!file.isDirectory() && !file.isFile() && pattern.matcher(fileName).find()){
                         String portName = searchPath + fileName;
-                        int portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
+                        long portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
                         if(portHandle < 0 && portHandle != SerialNativeInterface.ERR_PORT_BUSY){
                             continue;
                         }

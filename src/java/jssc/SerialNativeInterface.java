@@ -49,19 +49,19 @@ public class SerialNativeInterface {
     /**
      * @since 2.3.0
      */
-    public static final int ERR_PORT_BUSY = -1;
+    public static final long ERR_PORT_BUSY = -1;
     /**
      * @since 2.3.0
      */
-    public static final int ERR_PORT_NOT_FOUND = -2;
+    public static final long ERR_PORT_NOT_FOUND = -2;
     /**
      * @since 2.3.0
      */
-    public static final int ERR_PERMISSION_DENIED = -3;
+    public static final long ERR_PERMISSION_DENIED = -3;
     /**
      * @since 2.3.0
      */
-    public static final int ERR_INCORRECT_SERIAL_PORT = -4;
+    public static final long ERR_INCORRECT_SERIAL_PORT = -4;
 
     static {
         String libFolderPath;
@@ -284,7 +284,7 @@ public class SerialNativeInterface {
      * 
      * @return handle of opened port or -1 if opening of the port was unsuccessful
      */
-    public native int openPort(String portName, boolean useTIOCEXCL);
+    public native long openPort(String portName, boolean useTIOCEXCL);
 
     /**
      * Setting the parameters of opened port
@@ -299,7 +299,7 @@ public class SerialNativeInterface {
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean setParams(int handle, int baudRate, int dataBits, int stopBits, int parity, boolean setRTS, boolean setDTR);
+    public native boolean setParams(long handle, int baudRate, int dataBits, int stopBits, int parity, boolean setRTS, boolean setDTR);
 
     /**
      * Purge of input and output buffer
@@ -309,7 +309,7 @@ public class SerialNativeInterface {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean purgePort(int handle, int flags);
+    public native boolean purgePort(long handle, int flags);
 
     /**
      * Close port
@@ -318,7 +318,7 @@ public class SerialNativeInterface {
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean closePort(int handle);
+    public native boolean closePort(long handle);
 
     /**
      * Set events mask
@@ -328,7 +328,7 @@ public class SerialNativeInterface {
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean setEventsMask(int handle, int mask);
+    public native boolean setEventsMask(long handle, int mask);
 
     /**
      * Get events mask
@@ -337,7 +337,7 @@ public class SerialNativeInterface {
      * 
      * @return Method returns event mask as a variable of <b>int</b> type
      */
-    public native int getEventsMask(int handle);
+    public native int getEventsMask(long handle);
 
     /**
      * Wait events
@@ -347,7 +347,7 @@ public class SerialNativeInterface {
      * @return Method returns two-dimensional array containing event types and their values
      * (<b>events[i][0] - event type</b>, <b>events[i][1] - event value</b>).
      */
-    public native int[][] waitEvents(int handle);
+    public native int[][] waitEvents(long handle);
 
     /**
      * Change RTS line state
@@ -357,7 +357,7 @@ public class SerialNativeInterface {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean setRTS(int handle, boolean value);
+    public native boolean setRTS(long handle, boolean value);
 
     /**
      * Change DTR line state
@@ -367,7 +367,7 @@ public class SerialNativeInterface {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean setDTR(int handle, boolean value);
+    public native boolean setDTR(long handle, boolean value);
 
     /**
      * Read data from port
@@ -377,7 +377,7 @@ public class SerialNativeInterface {
      * 
      * @return Method returns the array of read bytes
      */
-    public native byte[] readBytes(int handle, int byteCount);
+    public native byte[] readBytes(long handle, int byteCount);
 
     /**
      * Write data to port
@@ -387,7 +387,7 @@ public class SerialNativeInterface {
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean writeBytes(int handle, byte[] buffer);
+    public native boolean writeBytes(long handle, byte[] buffer);
 
     /**
      * Get bytes count in buffers of port
@@ -400,7 +400,7 @@ public class SerialNativeInterface {
      *
      * @since 0.8
      */
-    public native int[] getBuffersBytesCount(int handle);
+    public native int[] getBuffersBytesCount(long handle);
 
     /**
      * Set flow control mode
@@ -412,7 +412,7 @@ public class SerialNativeInterface {
      *
      * @since 0.8
      */
-    public native boolean setFlowControlMode(int handle, int mask);
+    public native boolean setFlowControlMode(long handle, int mask);
 
     /**
      * Get flow control mode
@@ -423,7 +423,7 @@ public class SerialNativeInterface {
      *
      * @since 0.8
      */
-    public native int getFlowControlMode(int handle);
+    public native int getFlowControlMode(long handle);
 
     /**
      * Get serial port names like an array of String
@@ -443,7 +443,7 @@ public class SerialNativeInterface {
      * <br><b>element 2</b> - <b>RING</b> line state</br>
      * <br><b>element 3</b> - <b>RLSD</b> line state</br>
      */
-    public native int[] getLinesStatus(int handle);
+    public native int[] getLinesStatus(long handle);
 
     /**
      * Send Break singnal for setted duration
@@ -454,5 +454,5 @@ public class SerialNativeInterface {
      *
      * @since 0.8
      */
-    public native boolean sendBreak(int handle, int duration);
+    public native boolean sendBreak(long handle, int duration);
 }

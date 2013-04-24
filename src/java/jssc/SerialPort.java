@@ -34,7 +34,7 @@ public class SerialPort {
 
     private SerialNativeInterface serialInterface;
     private SerialPortEventListener eventListener;
-    private int portHandle;
+    private long portHandle;
     private String portName;
     private boolean portOpened = false;
     private boolean maskAssigned = false;
@@ -151,17 +151,17 @@ public class SerialPort {
         else {
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
         }
-        switch(portHandle) {
-            case SerialNativeInterface.ERR_PORT_BUSY:
-                throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_BUSY);
-            case SerialNativeInterface.ERR_PORT_NOT_FOUND:
-                throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_NOT_FOUND);
-            case SerialNativeInterface.ERR_PERMISSION_DENIED:
-                throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PERMISSION_DENIED);
-            case SerialNativeInterface.ERR_INCORRECT_SERIAL_PORT:
-                throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_INCORRECT_SERIAL_PORT);
-            default:
-                break;
+        if(portHandle == SerialNativeInterface.ERR_PORT_BUSY){
+            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_BUSY);
+        }
+        else if(portHandle == SerialNativeInterface.ERR_PORT_NOT_FOUND){
+            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_NOT_FOUND);
+        }
+        else if(portHandle == SerialNativeInterface.ERR_PERMISSION_DENIED){
+            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PERMISSION_DENIED);
+        }
+        else if(portHandle == SerialNativeInterface.ERR_INCORRECT_SERIAL_PORT){
+            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_INCORRECT_SERIAL_PORT);
         }
         portOpened = true;
         return true;
