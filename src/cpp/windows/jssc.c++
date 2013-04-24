@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2013.
+ * Â© Alexey Sokolov (scream3r), 2010-2013.
  *
  * This file is part of jSSC.
  *
@@ -34,7 +34,7 @@
  *
  * In 2.2.0 added useTIOCEXCL (not used only for compatibility with _nix version)
  */
-JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName, jboolean useTIOCEXCL){
+JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName, jboolean useTIOCEXCL){
     char prefix[] = "\\\\.\\";
     const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
 
@@ -71,18 +71,14 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, job
     	}
     }
     //<- since 2.3.0
-#if defined(_X86_)
-    return (jint)hComm;
-#elif defined(__x86_64)
-    return (intptr_t)hComm;
-#endif
+    return (jlong)hComm;//since 2.4.0 changed to jlong
 };
 
 /*
  * Setting serial port params.
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
-  (JNIEnv *env, jobject object, jint portHandle, jint baudRate, jint byteSize, jint stopBits, jint parity, jboolean setRTS, jboolean setDTR){
+  (JNIEnv *env, jobject object, jlong portHandle, jint baudRate, jint byteSize, jint stopBits, jint parity, jboolean setRTS, jboolean setDTR){
     HANDLE hComm = (HANDLE)portHandle;
     DCB *dcb = new DCB();
     jboolean returnValue = JNI_FALSE;
@@ -144,7 +140,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
  * PurgeComm
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_purgePort
-  (JNIEnv *env, jobject object, jint portHandle, jint flags){
+  (JNIEnv *env, jobject object, jlong portHandle, jint flags){
     HANDLE hComm = (HANDLE)portHandle;
     DWORD dwFlags = (DWORD)flags;
     return (PurgeComm(hComm, dwFlags) ? JNI_TRUE : JNI_FALSE);
@@ -154,7 +150,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_purgePort
  * Port closing
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_closePort
-  (JNIEnv *env, jobject object, jint portHandle){
+  (JNIEnv *env, jobject object, jlong portHandle){
     HANDLE hComm = (HANDLE)portHandle;
     return (CloseHandle(hComm) ? JNI_TRUE : JNI_FALSE);
 }
@@ -163,7 +159,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_closePort
  * Set events mask
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setEventsMask
-  (JNIEnv *env, jobject object, jint portHandle, jint mask){
+  (JNIEnv *env, jobject object, jlong portHandle, jint mask){
     HANDLE hComm = (HANDLE)portHandle;
     DWORD dwEvtMask = (DWORD)mask;
     return (SetCommMask(hComm, dwEvtMask) ? JNI_TRUE : JNI_FALSE);
@@ -173,7 +169,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setEventsMask
  * Get events mask
  */
 JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getEventsMask
-  (JNIEnv *env, jobject object, jint portHandle){
+  (JNIEnv *env, jobject object, jlong portHandle){
     HANDLE hComm = (HANDLE)portHandle;
     DWORD lpEvtMask;
     if(GetCommMask(hComm, &lpEvtMask)){
@@ -188,7 +184,7 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getEventsMask
  * Change RTS line state (ON || OFF)
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setRTS
-  (JNIEnv *env, jobject object, jint portHandle, jboolean enabled){
+  (JNIEnv *env, jobject object, jlong portHandle, jboolean enabled){
     HANDLE hComm = (HANDLE)portHandle;
     if(enabled == JNI_TRUE){
         return (EscapeCommFunction(hComm, SETRTS) ? JNI_TRUE : JNI_FALSE);
@@ -202,7 +198,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setRTS
  * Change DTR line state (ON || OFF)
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setDTR
-  (JNIEnv *env, jobject object, jint portHandle, jboolean enabled){
+  (JNIEnv *env, jobject object, jlong portHandle, jboolean enabled){
     HANDLE hComm = (HANDLE)portHandle;
     if(enabled == JNI_TRUE){
         return (EscapeCommFunction(hComm, SETDTR) ? JNI_TRUE : JNI_FALSE);
@@ -218,7 +214,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setDTR
  * buffer - byte array for sending
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
-  (JNIEnv *env, jobject object, jint portHandle, jbyteArray buffer){
+  (JNIEnv *env, jobject object, jlong portHandle, jbyteArray buffer){
     HANDLE hComm = (HANDLE)portHandle;
     DWORD lpNumberOfBytesTransferred;
     DWORD lpNumberOfBytesWritten;
@@ -248,7 +244,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
  * byteCount - count of bytes for reading
  */
 JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
-  (JNIEnv *env, jobject object, jint portHandle, jint byteCount){
+  (JNIEnv *env, jobject object, jlong portHandle, jint byteCount){
     HANDLE hComm = (HANDLE)portHandle;
     DWORD lpNumberOfBytesTransferred;
     DWORD lpNumberOfBytesRead;
@@ -275,7 +271,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
  * Get bytes count in serial port buffers (Input and Output)
  */
 JNIEXPORT jintArray JNICALL Java_jssc_SerialNativeInterface_getBuffersBytesCount
-  (JNIEnv *env, jobject object, jint portHandle){
+  (JNIEnv *env, jobject object, jlong portHandle){
 	HANDLE hComm = (HANDLE)portHandle;
 	jint returnValues[2];
 	returnValues[0] = -1;
@@ -310,7 +306,7 @@ const jint FLOWCONTROL_XONXOFF_OUT = 8;
  * since 0.8
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setFlowControlMode
-  (JNIEnv *env, jobject object, jint portHandle, jint mask){
+  (JNIEnv *env, jobject object, jlong portHandle, jint mask){
 	HANDLE hComm = (HANDLE)portHandle;
 	jboolean returnValue = JNI_FALSE;
 	DCB *dcb = new DCB();
@@ -347,7 +343,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setFlowControlMode
  * since 0.8
  */
 JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getFlowControlMode
-  (JNIEnv *env, jobject object, jint portHandle){
+  (JNIEnv *env, jobject object, jlong portHandle){
 	HANDLE hComm = (HANDLE)portHandle;
 	jint returnValue = 0;
 	DCB *dcb = new DCB();
@@ -375,7 +371,7 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getFlowControlMode
  * since 0.8
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_sendBreak
-  (JNIEnv *env, jobject object, jint portHandle, jint duration){
+  (JNIEnv *env, jobject object, jlong portHandle, jint duration){
 	HANDLE hComm = (HANDLE)portHandle;
 	jboolean returnValue = JNI_FALSE;
 	if(duration > 0){
@@ -394,7 +390,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_sendBreak
  * portHandle - port handle
  */
 JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
-  (JNIEnv *env, jobject object, jint portHandle) {
+  (JNIEnv *env, jobject object, jlong portHandle) {
     HANDLE hComm = (HANDLE)portHandle;
     DWORD lpEvtMask = 0;
     DWORD lpNumberOfBytesTransferred = 0;
@@ -660,7 +656,7 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getSerialPortName
  *
  */
 JNIEXPORT jintArray JNICALL Java_jssc_SerialNativeInterface_getLinesStatus
-  (JNIEnv *env, jobject object, jint portHandle){
+  (JNIEnv *env, jobject object, jlong portHandle){
     HANDLE hComm = (HANDLE)portHandle;
     DWORD lpModemStat;
     jint returnValues[4];
