@@ -1,7 +1,13 @@
-jSSC-2.3.0 in development
+jSSC-2.4.0 in development
 
+* Fixed native lib extraction path if user home is read only, in this situation lib will be extracted to tmp folder
+* Added new exception TYPE_INCORRECT_SERIAL_PORT
+* Added "ERR_" constants into SerialNativeInterface
+* Added some syntax sugar to SerialPortList class, for changing search path, RegExp and comparator
+* Added rfcomm (bluetooth devices in Linux) to Linux RegExp
+* Added JSSC_NO_TIOCEXCL JVM property for disable using of exclusive access to serial port
 * Important! Fixed bug with garbage reading on Linux, MacOSX, Solaris, cause of incorrect using of VMIN and VTIME. Now "read" methods works correctly and are blocking like in Windows
-* Added termios structure cheking on port opening, it helps separate real serial devices from others
+* Added termios(_nix) and DCB(Windows) structure cheking on port opening, it helps separate real serial devices from others
 * Added new exception TYPE_PERMISSION_DENIED. It can be very useful for _nix based system if user have no permissions for using serial device
 * Added timeouts for read operations and SerialPortTimeoutException class for catching timeout exceptions
 * Added Raspberry Pi support Hard & Soft float
