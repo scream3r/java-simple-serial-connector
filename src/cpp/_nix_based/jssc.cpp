@@ -59,7 +59,7 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jo
         //since 2.2.0 -> (check termios structure for separating real serial devices from others)
         termios *settings = new termios();
         if(tcgetattr(hComm, settings) == 0){
-        #if defined TIOCEXCL && !defined __SunOS
+        #if defined TIOCEXCL //&& !defined __SunOS
             if(useTIOCEXCL == JNI_TRUE){
                 ioctl(hComm, TIOCEXCL);
             }
@@ -419,7 +419,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_purgePort
 /* Closing the port */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_closePort
   (JNIEnv *env, jobject object, jlong portHandle){
-#if defined TIOCNXCL && !defined __SunOS
+#if defined TIOCNXCL //&& !defined __SunOS
     ioctl(portHandle, TIOCNXCL);//since 2.1.0 Clear exclusive port access on closing
 #endif
     return close(portHandle) == 0 ? JNI_TRUE : JNI_FALSE;
