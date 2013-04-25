@@ -1,5 +1,6 @@
 jSSC-2.4.0 in development
 
+* The port handle now stored in variable of type "long" instead of "int", to prevent potential problems with type conversions on Win64
 * Fixed native lib extraction path if user home is read only, in this situation lib will be extracted to tmp folder
 * Added new exception TYPE_INCORRECT_SERIAL_PORT
 * Added "ERR_" constants into SerialNativeInterface
