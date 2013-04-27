@@ -1,4 +1,4 @@
-jSSC-2.4.0 Release version (26.04.2013)
+jSSC-2.5.0 Release version (27.04.2013)
 
 This version contains native libs for Windows(x86, x86-64), Linux(x86, x86-64, ARM soft & hard float), Solaris(x86, x86-64), Mac OS X(x86, x86-64, PPC, PPC64).
 All native libs contains in the jssc.jar file and you don't need manage native libs manually.
