@@ -37,6 +37,7 @@
 #endif
 #ifdef __SunOS
     #include <sys/filio.h>//Needed for FIONREAD in Solaris
+    #include <string.h>//Needed for select() function
 #endif
 #ifdef __APPLE__
     #include <serial/ioss.h>//Needed for IOSSIOSPEED in Mac OS X (Non standard baudrate)
