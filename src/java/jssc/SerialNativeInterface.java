@@ -91,7 +91,7 @@ public class SerialNativeInterface {
             osName = "solaris";
             osType = OS_SOLARIS;
         }
-        else if(osName.equals("Mac OS X")){
+        else if(osName.equals("Mac OS X") || osName.equals("Darwin")){//os.name "Darwin" since 2.6.0
             osName = "mac_os_x";
             osType = OS_MAC_OS_X;
         }//<- since 0.9.0
@@ -99,7 +99,7 @@ public class SerialNativeInterface {
         if(architecture.equals("i386") || architecture.equals("i686")){
             architecture = "x86";
         }
-        else if(architecture.equals("amd64")){
+        else if(architecture.equals("amd64") || architecture.equals("universal")){//os.arch "universal" since 2.6.0
             architecture = "x86_64";
         }
         else if(architecture.equals("arm")) {//since 2.1.0
