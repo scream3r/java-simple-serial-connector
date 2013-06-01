@@ -217,7 +217,7 @@ public class SerialPortList {
      *
      * @since 2.3.0
      */
-    public static String[] getPortNames(Comparator comparator) {
+    public static String[] getPortNames(Comparator<String> comparator) {
         return getPortNames(PORTNAMES_PATH, PORTNAMES_REGEXP, comparator);
     }
 
@@ -253,7 +253,7 @@ public class SerialPortList {
      *
      * @since 2.3.0
      */
-    public static String[] getPortNames(String searchPath, Comparator comparator) {
+    public static String[] getPortNames(String searchPath, Comparator<String> comparator) {
         return getPortNames(searchPath, PORTNAMES_REGEXP, comparator);
     }
 
@@ -267,7 +267,7 @@ public class SerialPortList {
      *
      * @since 2.3.0
      */
-    public static String[] getPortNames(Pattern pattern, Comparator comparator) {
+    public static String[] getPortNames(Pattern pattern, Comparator<String> comparator) {
         return getPortNames(PORTNAMES_PATH, pattern, comparator);
     }
 
@@ -286,7 +286,7 @@ public class SerialPortList {
      *
      * @since 2.3.0
      */
-    public static String[] getPortNames(String searchPath, Pattern pattern, Comparator comparator) {
+    public static String[] getPortNames(String searchPath, Pattern pattern, Comparator<String> comparator) {
         if(searchPath == null || pattern == null || comparator == null){
             return new String[]{};
         }
@@ -301,7 +301,7 @@ public class SerialPortList {
      *
      * @since 2.3.0
      */
-    private static String[] getWindowsPortNames(Pattern pattern, Comparator comparator) {
+    private static String[] getWindowsPortNames(Pattern pattern, Comparator<String> comparator) {
         String[] portNames = serialInterface.getSerialPortNames();
         if(portNames == null){
             return new String[]{};
@@ -318,7 +318,7 @@ public class SerialPortList {
     /**
      * Universal method for getting port names of _nix based systems
      */
-    private static String[] getUnixBasedPortNames(String searchPath, Pattern pattern, Comparator comparator) {
+    private static String[] getUnixBasedPortNames(String searchPath, Pattern pattern, Comparator<String> comparator) {
         searchPath = (searchPath.equals("") ? searchPath : (searchPath.endsWith("/") ? searchPath : searchPath + "/"));
         String[] returnArray = new String[]{};
         File dir = new File(searchPath);
