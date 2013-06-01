@@ -63,6 +63,19 @@ public class SerialNativeInterface {
      */
     public static final long ERR_INCORRECT_SERIAL_PORT = -4;
 
+    /**
+     * @since 2.6.0
+     */
+    public static final String PROPERTY_JSSC_NO_TIOCEXCL = "JSSC_NO_TIOCEXCL";
+    /**
+     * @since 2.6.0
+     */
+    public static final String PROPERTY_JSSC_IGNPAR = "JSSC_IGNPAR";
+    /**
+     * @since 2.6.0
+     */
+    public static final String PROPERTY_JSSC_PARMRK = "JSSC_PARMRK";
+
     static {
         String libFolderPath;
         String libName;

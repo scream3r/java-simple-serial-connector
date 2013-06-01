@@ -151,7 +151,9 @@ public class SerialPort {
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_ALREADY_OPENED);
         }
         if(portName != null){
-            portHandle = serialInterface.openPort(portName, (System.getProperty("JSSC_NO_TIOCEXCL") == null && System.getProperty("jssc_no_tiocexcl") == null));//since 2.3.0 -> (if JSSC_NO_TIOCEXCL defined, exclusive lock for serial port will be disabled)
+            boolean useTIOCEXCL = (System.getProperty(SerialNativeInterface.PROPERTY_JSSC_NO_TIOCEXCL) == null &&
+                                   System.getProperty(SerialNativeInterface.PROPERTY_JSSC_NO_TIOCEXCL.toLowerCase()) == null);
+            portHandle = serialInterface.openPort(portName, useTIOCEXCL);//since 2.3.0 -> (if JSSC_NO_TIOCEXCL defined, exclusive lock for serial port will be disabled)
         }
         else {
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
@@ -213,10 +215,10 @@ public class SerialPort {
             stopBits = 1;
         }
         int flags = 0;
-        if(System.getProperty("JSSC_IGNPAR") != null || System.getProperty("jssc_ignpar") != null){
+        if(System.getProperty(SerialNativeInterface.PROPERTY_JSSC_IGNPAR) != null || System.getProperty(SerialNativeInterface.PROPERTY_JSSC_IGNPAR.toLowerCase()) != null){
             flags |= PARAMS_FLAG_IGNPAR;
         }
-        if(System.getProperty("JSSC_PARMRK") != null || System.getProperty("jssc_parmrk") != null){
+        if(System.getProperty(SerialNativeInterface.PROPERTY_JSSC_PARMRK) != null || System.getProperty(SerialNativeInterface.PROPERTY_JSSC_PARMRK.toLowerCase()) != null){
             flags |= PARAMS_FLAG_PARMRK;
         }
         return serialInterface.setParams(portHandle, baudRate, dataBits, stopBits, parity, setRTS, setDTR, flags);
