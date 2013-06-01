@@ -32,7 +32,7 @@
 /*
  * Port opening.
  *
- * In 2.2.0 added useTIOCEXCL (not used only for compatibility with _nix version)
+ * In 2.2.0 added useTIOCEXCL (not used in Windows, only for compatibility with _nix version)
  */
 JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName, jboolean useTIOCEXCL){
     char prefix[] = "\\\\.\\";
@@ -76,9 +76,11 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jo
 
 /*
  * Setting serial port params.
+ *
+ * In 2.6.0 added flags (not used in Windows, only for compatibility with _nix version)
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
-  (JNIEnv *env, jobject object, jlong portHandle, jint baudRate, jint byteSize, jint stopBits, jint parity, jboolean setRTS, jboolean setDTR){
+  (JNIEnv *env, jobject object, jlong portHandle, jint baudRate, jint byteSize, jint stopBits, jint parity, jboolean setRTS, jboolean setDTR, jint flags){
     HANDLE hComm = (HANDLE)portHandle;
     DCB *dcb = new DCB();
     jboolean returnValue = JNI_FALSE;
