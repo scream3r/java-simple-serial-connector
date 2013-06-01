@@ -36,7 +36,7 @@ import java.io.InputStreamReader;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "2.5"; //jSSC-2.5.0 Release from 27.04.2013
+    private static final String libVersion = "2.6"; //jSSC-2.5.0 Release from 27.04.2013
     private static final String libMinorSuffix = "0"; //since 0.9.0
 
     public static final int OS_LINUX = 0;
@@ -280,7 +280,7 @@ public class SerialNativeInterface {
      * Open port
      *
      * @param portName name of port for opening
-     * @param useTIOCEXCL enable/disable using of <b>TIOCEXCL</b>. Take effect only on *nix based systems.
+     * @param useTIOCEXCL enable/disable using of <b>TIOCEXCL</b>. Take effect only on *nix based systems
      * 
      * @return handle of opened port or -1 if opening of the port was unsuccessful
      */
@@ -296,10 +296,11 @@ public class SerialNativeInterface {
      * @param parity parity
      * @param setRTS initial state of RTS line (ON/OFF)
      * @param setDTR initial state of DTR line (ON/OFF)
+     * @param flags additional Native settings. Take effect only on *nix based systems
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean setParams(long handle, int baudRate, int dataBits, int stopBits, int parity, boolean setRTS, boolean setDTR);
+    public native boolean setParams(long handle, int baudRate, int dataBits, int stopBits, int parity, boolean setRTS, boolean setDTR, int flags);
 
     /**
      * Purge of input and output buffer

@@ -58,10 +58,10 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    setParams
- * Signature: (JIIIIZZ)Z
+ * Signature: (JIIIIZZI)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
-  (JNIEnv *, jobject, jlong, jint, jint, jint, jint, jboolean, jboolean);
+  (JNIEnv *, jobject, jlong, jint, jint, jint, jint, jboolean, jboolean, jint);
 
 /*
  * Class:     jssc_SerialNativeInterface

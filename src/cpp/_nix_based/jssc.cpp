@@ -220,12 +220,19 @@ int getDataBitsByNum(jint byteSize) {
     }
 }
 
+//since 2.6.0 ->
+const jint PARAMS_FLAG_IGNPAR = 1;
+const jint PARAMS_FLAG_PARMRK = 2;
+//<- since 2.6.0
+
 /* OK */
 /*
  * Set serial port settings
+ *
+ * In 2.6.0 added flags parameter
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
-  (JNIEnv *env, jobject object, jlong portHandle, jint baudRate, jint byteSize, jint stopBits, jint parity, jboolean setRTS, jboolean setDTR){
+  (JNIEnv *env, jobject object, jlong portHandle, jint baudRate, jint byteSize, jint stopBits, jint parity, jboolean setRTS, jboolean setDTR, jint flags){
     jboolean returnValue = JNI_FALSE;
     
     speed_t baudRateValue = getBaudRateByNum(baudRate);
@@ -299,11 +306,20 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
     settings->c_cflag &= ~CRTSCTS;
     settings->c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ECHOCTL | ECHOPRT | ECHOKE | ISIG | IEXTEN);
 
-    settings->c_iflag &= ~(IXON | IXOFF | IXANY | INPCK | PARMRK | ISTRIP | IGNBRK | BRKINT | INLCR | IGNCR| ICRNL);
+    settings->c_iflag &= ~(IXON | IXOFF | IXANY | INPCK | IGNPAR | PARMRK | ISTRIP | IGNBRK | BRKINT | INLCR | IGNCR| ICRNL);
 #ifdef IUCLC
     settings->c_iflag &= ~IUCLC;
 #endif
     settings->c_oflag &= ~OPOST;
+
+    //since 2.6.0 ->
+    if((flags & PARAMS_FLAG_IGNPAR) == PARAMS_FLAG_IGNPAR){
+        settings->c_iflag |= IGNPAR;
+    }
+    if((flags & PARAMS_FLAG_PARMRK) == PARAMS_FLAG_PARMRK){
+        settings->c_iflag |= PARMRK;
+    }
+    //<- since 2.6.0
 
     //since 0.9 ->
     settings->c_cc[VMIN] = 0;

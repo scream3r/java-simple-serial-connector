@@ -108,6 +108,11 @@ public class SerialPort {
     public static final int ERROR_PARITY = 0x0004;
     //<- since 0.8
 
+    //since 2.6.0 ->
+    private static final int PARAMS_FLAG_IGNPAR = 1;
+    private static final int PARAMS_FLAG_PARMRK = 2;
+    //<- since 2.6.0
+
     public SerialPort(String portName) {
         this.portName = portName;
         serialInterface = new SerialNativeInterface();
@@ -180,14 +185,7 @@ public class SerialPort {
      * @throws SerialPortException
      */
     public boolean setParams(int baudRate, int dataBits, int stopBits, int parity) throws SerialPortException {
-        checkPortOpened("setParams()");
-        if(stopBits == 1){
-            stopBits = 0;
-        }
-        else if(stopBits == 3){
-            stopBits = 1;
-        }
-        return serialInterface.setParams(portHandle, baudRate, dataBits, stopBits, parity, true, true);
+        return setParams(baudRate, dataBits, stopBits, parity, true, true);
     }
 
     /**
@@ -214,7 +212,14 @@ public class SerialPort {
         else if(stopBits == 3){
             stopBits = 1;
         }
-        return serialInterface.setParams(portHandle, baudRate, dataBits, stopBits, parity, setRTS, setDTR);
+        int flags = 0;
+        if(System.getProperty("JSSC_IGNPAR") != null || System.getProperty("jssc_ignpar") != null){
+            flags |= PARAMS_FLAG_IGNPAR;
+        }
+        if(System.getProperty("JSSC_PARMRK") != null || System.getProperty("jssc_parmrk") != null){
+            flags |= PARAMS_FLAG_PARMRK;
+        }
+        return serialInterface.setParams(portHandle, baudRate, dataBits, stopBits, parity, setRTS, setDTR, flags);
     }
 
     /**
