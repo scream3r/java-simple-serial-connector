@@ -36,7 +36,7 @@ import java.io.InputStreamReader;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "2.6"; //jSSC-2.5.0 Release from 27.04.2013
+    private static final String libVersion = "2.6"; //jSSC-2.6.0 Release from 01.06.2013
     private static final String libMinorSuffix = "0"; //since 0.9.0
 
     public static final int OS_LINUX = 0;
