@@ -84,7 +84,7 @@ public class SerialInputStream extends InputStream {
 	 * This is a call as follows: blockingRead(buf, 0, buf.length);
 	 * @param buf The buffer to fill with data.
 	 * @return The number of bytes read.
-	 * @throws IOException On error.
+	 * @throws IOException On error or timeout.
 	 */
 	public int blockingRead(byte[] buf) throws IOException {
 		return blockingRead(buf, 0, buf.length);

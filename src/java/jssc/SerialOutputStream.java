@@ -13,8 +13,26 @@ public class SerialOutputStream extends OutputStream {
 
 	@Override
 	public void write(int b) throws IOException {
-		// TODO Auto-generated method stub
+		try {
+			serialPort.writeInt(b);
+		} catch (SerialPortException e) {
+			throw new IOException(e);
+		}
+	}
+	
+	public void write(byte[] b) throws IOException {
+		write(b, 0, b.length);
 		
+	}
+	
+	public void write(byte[] b, int off, int len) throws IOException {
+		byte[] buffer = new byte[len];
+		System.arraycopy(b, off, buffer, 0, len);
+		try {
+			serialPort.writeBytes(buffer);
+		} catch (SerialPortException e) {
+			throw new IOException(e);
+		}
 	}
 
 }
