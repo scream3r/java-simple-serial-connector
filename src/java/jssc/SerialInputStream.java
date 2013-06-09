@@ -74,10 +74,10 @@ public class SerialInputStream extends InputStream {
 		try {
 			byte[] readBuf = serialPort.readBytes(available);
 			System.arraycopy(readBuf, 0, buf, offset, length);
+			return readBuf.length;
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
-		throw new IOException("No data - serial port error");
 	}
 	
 	/** Blocks until buf.length bytes are read, an error occurs, or the timeout is hit if specified.
@@ -110,10 +110,10 @@ public class SerialInputStream extends InputStream {
 		try {
 			byte[] readBuf = serialPort.readBytes(length, timeout);
 			System.arraycopy(readBuf, 0, buf, offset, length);
+			return readBuf.length;
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
-		throw new IOException("No data - serial port error");
 	}
 	
 	@Override
