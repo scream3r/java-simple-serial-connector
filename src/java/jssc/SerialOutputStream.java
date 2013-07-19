@@ -6,6 +6,11 @@ import java.io.OutputStream;
 /**
  * Class that wraps a {@link SerialPort} to provide
  * {@link OutputStream} functionality.
+ * <br>
+ * It is instantiated by passing the constructor a {@link SerialPort}
+ * instance.  Do not create multiple streams for the 
+ * same serial port unless you implement your own
+ * synchronization.
  * 
  * @author Charles Hache <chalz@member.fsf.org>
  *
@@ -15,6 +20,8 @@ public class SerialOutputStream extends OutputStream {
 	SerialPort serialPort;
 
 	/** Instantiates a SerialOutputStream for the given {@link SerialPort}
+	 * Do not create multiple streams for the same serial port
+	 * unless you implement your own synchronization.
 	 * @param sp The serial port to stream.
 	 */
 	public SerialOutputStream(SerialPort sp) {

@@ -8,6 +8,11 @@ import java.io.InputStream;
  * {@link InputStream} functionality.  This stream
  * also provides support for performing blocking reads 
  * with timeouts.
+ * <br>
+ * It is instantiated by passing the constructor a {@link SerialPort}
+ * instance.  Do not create multiple streams for the 
+ * same serial port unless you implement your own
+ * synchronization.
  * @author Charles Hache <chalz@member.fsf.org>
  *
  */
@@ -17,6 +22,8 @@ public class SerialInputStream extends InputStream {
 	private int defaultTimeout = 0;
 
 	/** Instantiates a SerialInputStream for the given {@link SerialPort}
+	 * Do not create multiple streams for the same serial port
+	 * unless you implement your own synchronization.
 	 * @param sp The serial port to stream.
 	 */
 	public SerialInputStream(SerialPort sp) {
@@ -45,7 +52,7 @@ public class SerialInputStream extends InputStream {
 	}
 	
 	/** The same contract as {@link #read()}, except overrides
-	 * this SerialInputStream's default timeout with the given
+	 * this stream's default timeout with the given
 	 * timeout in milliseconds.
 	 * @param timeout The timeout in milliseconds.
 	 * @return The read byte.
@@ -77,10 +84,11 @@ public class SerialInputStream extends InputStream {
 	}
 	
 	/** Non-blocking read of up to length bytes from the stream.
-	 * 
+	 * This method returns what is immediately available in the input
+	 * buffer.
 	 * @param buf The buffer to fill.
 	 * @param offset The offset into the buffer to start copying data.
-	 * @param length The max number of bytes to read.
+	 * @param length The maximum number of bytes to read.
 	 * @return The actual number of bytes read, which can be 0.
 	 * @throws IOException on error.
 	 */
@@ -126,7 +134,7 @@ public class SerialInputStream extends InputStream {
 	}
 	/** Blocks until length bytes are read, an error occurs, or the default timeout is hit (if specified).
 	 * Saves the data into the given buffer at the specified offset.
-	 * If the timeout isn't set, behaves as {@link #read(byte[], int, int)} would.
+	 * If the stream's timeout is not set, behaves as {@link #read(byte[], int, int)} would.
 	 * @param buf The buffer to fill.
 	 * @param offset The offset in buffer to save the data.
 	 * @param length The number of bytes to read.
