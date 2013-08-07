@@ -150,7 +150,9 @@ public class SerialNativeInterface {
 
         boolean loadLib = false;
 
-        if(isLibFolderExist(libFolderPath)){
+        if(loadLibFromPath("jSSC-"+libVersion)) {
+            // nothing more to do
+        } else if(isLibFolderExist(libFolderPath)){
             if(isLibFileExist(libFolderPath + fileSeparator + libName)){
                 loadLib = true;
             }
@@ -287,6 +289,21 @@ public class SerialNativeInterface {
      */
     public static String getLibraryMinorSuffix() {
         return libMinorSuffix;
+    }
+
+    /**
+     * Attempt to load a library using System.loadLibrary
+     *
+     * @param lib name of the library
+     * @return true if successful, false if not
+     */
+    public static boolean loadLibFromPath(String lib) {
+        try {
+            System.loadLibrary(lib);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
