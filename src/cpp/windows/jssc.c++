@@ -254,11 +254,27 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     jbyte lpBuffer[byteCount];
     jbyteArray returnArray = env->NewByteArray(byteCount);
     overlapped->hEvent = CreateEventA(NULL, true, false, NULL);
+    jclass threadClass = env->FindClass("java/lang/Thread");
+    jmethodID areWeInterruptedMethod = env->GetStaticMethodID(threadClass, "interrupted", "()Z");
+    int waitRetVal;
+    int millisecondPoll = 100;	// Wait for 100ms between checking interrupt status
+
     if(ReadFile(hComm, lpBuffer, (DWORD)byteCount, &lpNumberOfBytesRead, overlapped)){
         env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
     }
     else if(GetLastError() == ERROR_IO_PENDING){
-        if(WaitForSingleObject(overlapped->hEvent, INFINITE) == WAIT_OBJECT_0){
+        while ((waitRetVal = WaitForSingleObject(overlapped->hEvent, millisecondPoll)) == WAIT_TIMEOUT) {
+            // Check if the java thread has been interrupted, and if so, throw the exception
+            if (env->CallStaticBooleanMethod(threadClass, areWeInterruptedMethod)) {
+                CancelIo(hComm); // Cancel pending IO request
+                jclass excClass = env->FindClass("java/lang/InterruptedException");
+                env->ThrowNew(excClass, "Interrupted while waiting for serial data");
+                jbyteArray fakeRet = env->NewByteArray(0);
+                return fakeRet; // It shouldn't matter what we return, the exception will be thrown right away
+            }
+        }
+
+        if(waitRetVal == WAIT_OBJECT_0){
             if(GetOverlappedResult(hComm, overlapped, &lpNumberOfBytesTransferred, false)){
                 env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
             }

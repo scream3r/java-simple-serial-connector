@@ -418,7 +418,11 @@ public class SerialPort {
      */
     public byte[] readBytes(int byteCount) throws SerialPortException {
         checkPortOpened("readBytes()");
-        return serialInterface.readBytes(portHandle, byteCount);
+        try {
+            return serialInterface.readBytes(portHandle, byteCount);
+        } catch (InterruptedException e) {
+            throw new SerialPortException(portName, "readBytes", SerialPortException.TYPE_LISTENER_THREAD_INTERRUPTED);
+        }
     }
 
     /**
@@ -543,7 +547,7 @@ public class SerialPort {
                 Thread.sleep(0, 100);//Need to sleep some time to prevent high CPU loading
             }
             catch (InterruptedException ex) {
-                //Do nothing
+                throw new SerialPortException(portName, methodName, SerialPortException.TYPE_LISTENER_THREAD_INTERRUPTED);
             }
         }
         if(timeIsOut){

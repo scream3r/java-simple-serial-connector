@@ -31,6 +31,7 @@
 #include <errno.h>//-D_TS_ERRNO use for Solaris C++ compiler
 
 #include <sys/select.h>//since 2.5.0
+#include <sys/time.h>	//For timeouts to select()
 
 #ifdef __linux__
     #include <linux/serial.h>
@@ -526,13 +527,33 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     fd_set read_fd_set;
     jbyte *lpBuffer = new jbyte[byteCount];
     int byteRemains = byteCount;
+    struct timeval timeout;
+    int selectRetVal;
+
+    jclass threadClass = env->FindClass("java/lang/Thread");
+    jmethodID areWeInterruptedMethod = env->GetStaticMethodID(threadClass, "interrupted", "()Z");
+
     while(byteRemains > 0) {
         FD_ZERO(&read_fd_set);
         FD_SET(portHandle, &read_fd_set);
-        select(portHandle + 1, &read_fd_set, NULL, NULL, NULL);
-        int result = read(portHandle, lpBuffer + (byteCount - byteRemains), byteRemains);
-        if(result > 0){
-            byteRemains -= result;
+        timeout.tv_sec = 0;         // the timeout must be reset after every call to select()
+        timeout.tv_usec = 100000;   // timeout is 100ms
+
+        selectRetVal = select(portHandle + 1, &read_fd_set, NULL, NULL, &timeout);
+
+        // Check if the java thread has been interrupted, and if so, throw the exception
+        if (env->CallStaticBooleanMethod(threadClass, areWeInterruptedMethod)) {
+            jclass excClass = env->FindClass("java/lang/InterruptedException");
+            env->ThrowNew(excClass, "Interrupted while waiting for serial data");
+            jbyteArray fakeRet = env->NewByteArray(0);
+            return fakeRet; // It shouldn't matter what we return, the exception will be thrown right away
+        }
+
+        if (selectRetVal > 0) {
+            int result = read(portHandle, lpBuffer + (byteCount - byteRemains), byteRemains);
+            if(result > 0){
+                byteRemains -= result;
+            }
         }
     }
     FD_CLR(portHandle, &read_fd_set);
