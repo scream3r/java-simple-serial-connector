@@ -40,7 +40,12 @@
     #include <string.h>//Needed for select() function
 #endif
 #ifdef __APPLE__
+    #include <CoreFoundation/CoreFoundation.h>
+    #include <IOKit/IOKitLib.h>
+    #include <IOKit/serial/IOSerialKeys.h>
+    #include <IOKit/usb/USBSpec.h>
     #include <serial/ioss.h>//Needed for IOSSIOSPEED in Mac OS X (Non standard baudrate)
+    #include <sys/param.h> // Needed for MAXPATHLEN
 #endif
 
 #include <jni.h>
@@ -864,4 +869,134 @@ JNIEXPORT jintArray JNICALL Java_jssc_SerialNativeInterface_getLinesStatus
     
     env->SetIntArrayRegion(returnArray, 0, 4, returnValues);
     return returnArray;
+}
+
+JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getPortProperties
+  (JNIEnv *env, jclass cls, jstring portName) {
+    const char* portNameChar = (const char*)env->GetStringUTFChars(portName, NULL);
+    jclass stringClass = env->FindClass("Ljava/lang/String;");
+    jobjectArray ret = env->NewObjectArray(5, stringClass, NULL);
+
+#ifdef __APPLE__
+
+    // this code is based on QtSerialPort
+    CFMutableDictionaryRef matching = IOServiceMatching(kIOSerialBSDServiceValue);
+    io_iterator_t iter = 0;
+    kern_return_t kr = IOServiceGetMatchingServices(kIOMasterPortDefault, matching, &iter);
+    if (kr != kIOReturnSuccess) {
+        env->ReleaseStringUTFChars(portName, portNameChar);
+        return ret;
+    }
+
+    io_registry_entry_t service;
+    while ((service = IOIteratorNext(iter))) {
+
+        // compare portName against cu and tty devices
+        bool found = false;
+
+        CFTypeRef cu = 0;
+        cu = IORegistryEntrySearchCFProperty(service, kIOServicePlane, CFSTR(kIOCalloutDeviceKey), kCFAllocatorDefault, 0);
+        if (cu) {
+            char buffer[MAXPATHLEN];
+            CFStringGetCString(CFStringRef(cu), buffer, sizeof(buffer), kCFStringEncodingUTF8);
+            //fprintf(stdout, "getPortProperties: %s\n", buffer);
+            //fflush(stdout);
+            if (strcmp(portNameChar, buffer) == 0) {
+                found = true;
+            }
+            CFRelease(cu);
+        }
+
+        CFTypeRef tty = 0;
+        tty = IORegistryEntrySearchCFProperty(service, kIOServicePlane, CFSTR(kIODialinDeviceKey), kCFAllocatorDefault, 0);
+        if (tty) {
+            char buffer[MAXPATHLEN];
+            CFStringGetCString(CFStringRef(tty), buffer, sizeof(buffer), kCFStringEncodingUTF8);
+            //fprintf(stdout, "getPortProperties: %s\n", buffer);
+            //fflush(stdout);
+            if (strcmp(portNameChar, buffer) == 0) {
+                found = true;
+            }
+            CFRelease(tty);
+        }
+
+        if (!found) {
+            // not port we're looking for
+            //fprintf(stderr, "getPortProperties: %s not found", portNameChar);
+            //fflush(stderr);
+            IOObjectRelease(service);
+            continue;
+        }
+
+        io_registry_entry_t entry = service;
+        do {
+            int val = 0;
+            char buffer[255];
+
+            CFTypeRef idProduct = 0;
+            idProduct = IORegistryEntrySearchCFProperty(entry, kIOServicePlane, CFSTR(kUSBProductID), kCFAllocatorDefault, 0);
+            if (idProduct && !env->GetObjectArrayElement(ret, 0)) {
+                CFNumberGetValue(CFNumberRef(idProduct), kCFNumberIntType, &val);
+                sprintf(buffer, "%04x", val);
+                jstring tmp = env->NewStringUTF(buffer);
+                env->SetObjectArrayElement(ret, 0, tmp);
+                env->DeleteLocalRef(tmp);
+                CFRelease(idProduct);
+            }
+
+            CFTypeRef idVendor = 0;
+            idVendor = IORegistryEntrySearchCFProperty(entry, kIOServicePlane, CFSTR(kUSBVendorID), kCFAllocatorDefault, 0);
+            if (idVendor && !env->GetObjectArrayElement(ret, 1)) {
+                CFNumberGetValue(CFNumberRef(idVendor), kCFNumberIntType, &val);
+                sprintf(buffer, "%04x", val);
+                jstring tmp = env->NewStringUTF(buffer);
+                env->SetObjectArrayElement(ret, 1, tmp);
+                env->DeleteLocalRef(tmp);
+                CFRelease(idVendor);
+            }
+
+            CFTypeRef manufacturer = 0;
+            manufacturer = IORegistryEntrySearchCFProperty(entry, kIOServicePlane, CFSTR(kUSBVendorString), kCFAllocatorDefault, 0);
+            if (manufacturer && !env->GetObjectArrayElement(ret, 2)) {
+                CFStringGetCString(CFStringRef(manufacturer), buffer, sizeof(buffer), kCFStringEncodingUTF8);
+                jstring tmp = env->NewStringUTF(buffer);
+                env->SetObjectArrayElement(ret, 2, tmp);
+                env->DeleteLocalRef(tmp);
+                CFRelease(manufacturer);
+            }
+
+            CFTypeRef product = 0;
+            product = IORegistryEntrySearchCFProperty(entry, kIOServicePlane, CFSTR(kUSBProductString), kCFAllocatorDefault, 0);
+            if (product && !env->GetObjectArrayElement(ret, 3)) {
+                CFStringGetCString(CFStringRef(product), buffer, sizeof(buffer), kCFStringEncodingUTF8);
+                jstring tmp = env->NewStringUTF(buffer);
+                env->SetObjectArrayElement(ret, 3, tmp);
+                env->DeleteLocalRef(tmp);
+                CFRelease(product);
+            }
+
+            CFTypeRef serial = 0;
+            serial = IORegistryEntrySearchCFProperty(entry, kIOServicePlane, CFSTR(kUSBSerialNumberString), kCFAllocatorDefault, 0);
+            if (serial && !env->GetObjectArrayElement(ret, 4)) {
+                CFStringGetCString(CFStringRef(serial), buffer, sizeof(buffer), kCFStringEncodingUTF8);
+                jstring tmp = env->NewStringUTF(buffer);
+                env->SetObjectArrayElement(ret, 4, tmp);
+                env->DeleteLocalRef(tmp);
+                CFRelease(serial);
+            }
+
+            kr = IORegistryEntryGetParentEntry(entry, kIOServicePlane, &entry);
+        } while (kr == kIOReturnSuccess);
+
+        IOObjectRelease(entry);
+
+        IOObjectRelease(service);
+    }
+
+    IOObjectRelease(iter);
+
+#endif  // __APPLE__
+
+    env->ReleaseStringUTFChars(portName, portNameChar);
+    return ret;
 }
