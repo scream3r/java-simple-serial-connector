@@ -301,7 +301,7 @@ public class SerialNativeInterface {
         try {
             System.loadLibrary(lib);
             return true;
-        } catch (Exception e) {
+        } catch (UnsatisfiedLinkError e) {
             return false;
         }
     }
