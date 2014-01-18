@@ -72,6 +72,7 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jo
             fcntl(hComm, F_SETFL, flags);
         }
         else {
+            close(hComm);
             hComm = jssc_SerialNativeInterface_ERR_INCORRECT_SERIAL_PORT;//-4;
         }
         delete settings;

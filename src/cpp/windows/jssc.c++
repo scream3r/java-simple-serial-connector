@@ -57,6 +57,7 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jo
     if(hComm != INVALID_HANDLE_VALUE){
     	DCB *dcb = new DCB();
     	if(!GetCommState(hComm, dcb)){
+    		CloseHandle(hComm);
     		hComm = (HANDLE)jssc_SerialNativeInterface_ERR_INCORRECT_SERIAL_PORT;//(-4)Incorrect serial port
     	}
     	delete dcb;
