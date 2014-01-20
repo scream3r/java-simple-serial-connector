@@ -53,7 +53,7 @@ public class SerialPortList {
                 break;
             }
             case SerialNativeInterface.OS_MAC_OS_X: {
-                PORTNAMES_REGEXP = Pattern.compile("tty.(serial|usbserial|usbmodem).*");
+                PORTNAMES_REGEXP = Pattern.compile("(cu|tty)\\..+");
                 PORTNAMES_PATH = "/dev/";
                 break;
             }
@@ -330,6 +330,7 @@ public class SerialPortList {
                     String fileName = file.getName();
                     if(!file.isDirectory() && !file.isFile() && pattern.matcher(fileName).find()){
                         String portName = searchPath + fileName;
+                        /*
                         long portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
                         if(portHandle < 0 && portHandle != SerialNativeInterface.ERR_PORT_BUSY){
                             continue;
@@ -337,6 +338,7 @@ public class SerialPortList {
                         else if(portHandle != SerialNativeInterface.ERR_PORT_BUSY) {
                             serialInterface.closePort(portHandle);
                         }
+                        */
                         portsTree.add(portName);
                     }
                 }
