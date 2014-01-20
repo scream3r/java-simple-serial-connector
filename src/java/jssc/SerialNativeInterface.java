@@ -469,4 +469,6 @@ public class SerialNativeInterface {
      * @since 0.8
      */
     public native boolean sendBreak(long handle, int duration);
+
+    public static native String[] getPortProperties(String portName);
 }
