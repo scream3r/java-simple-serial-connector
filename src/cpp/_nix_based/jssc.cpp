@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2013.
+ * © Alexey Sokolov (scream3r), 2010-2014.
  *
  * This file is part of jSSC.
  *
@@ -72,7 +72,7 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jo
             fcntl(hComm, F_SETFL, flags);
         }
         else {
-            close(hComm);
+            close(hComm);//since 2.7.0
             hComm = jssc_SerialNativeInterface_ERR_INCORRECT_SERIAL_PORT;//-4;
         }
         delete settings;
