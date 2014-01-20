@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2013.
+ * © Alexey Sokolov (scream3r), 2010-2014.
  *
  * This file is part of jSSC.
  *
@@ -36,7 +36,7 @@ import java.io.InputStreamReader;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "2.6"; //jSSC-2.6.0 Release from 01.06.2013
+    private static final String libVersion = "2.7"; //jSSC-2.7.0 Release from 20.01.2014
     private static final String libMinorSuffix = "0"; //since 0.9.0
 
     public static final int OS_LINUX = 0;
