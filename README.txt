@@ -1,7 +1,20 @@
-jSSC-2.6.0 Release version (01.06.2013)
+jSSC-2.7.0 Release version (20.01.2014)
 
 This version contains native libs for Windows(x86, x86-64), Linux(x86, x86-64, ARM soft & hard float), Solaris(x86, x86-64), Mac OS X(x86, x86-64, PPC, PPC64).
 All native libs contains in the jssc.jar file and you don't need manage native libs manually.
+
+In this build:
+
+	Fixes:
+		* Important! Fixed bug with port handles potential leakage
+		
+With Best Regards, Sokolov Alexey aka scream3r.
+
+============= Previous Builds ==============
+
+///////////////////////////////////////////
+//jSSC-2.6.0 Release version (01.06.2013)//
+///////////////////////////////////////////
 
 In this build:
 
@@ -11,10 +24,6 @@ In this build:
 		* Added os.name - "Darwin" and os.arch - "universal" support. It can be useful for MacOS X developers.
 		* Added ttyO to Linux RegExp for listing OMAP serial devices.
 		* Added JSSC_IGNPAR and JSSC_PARMRK properties for enabling IGNPAR and PARMRK flags in _nix termios structure.
-		
-With Best Regards, Sokolov Alexey aka scream3r.
-
-============= Previous Builds ==============
 
 ///////////////////////////////////////////
 //jSSC-2.5.0 Release version (27.04.2013)//
