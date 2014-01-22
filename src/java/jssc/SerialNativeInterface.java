@@ -390,8 +390,9 @@ public class SerialNativeInterface {
      * @param byteCount count of bytes required to read
      * 
      * @return Method returns the array of read bytes
+     * @throws InterruptedException if the java thread is interrupted while blocking 
      */
-    public native byte[] readBytes(long handle, int byteCount);
+    public native byte[] readBytes(long handle, int byteCount) throws InterruptedException;
 
     /**
      * Write data to port
