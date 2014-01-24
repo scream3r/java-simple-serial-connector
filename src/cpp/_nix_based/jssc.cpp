@@ -48,6 +48,12 @@
 
 //#include <iostream> //-lCstd use for Solaris linker
 
+/*
+ * Get native library version
+ */
+JNIEXPORT jstring JNICALL Java_jssc_SerialNativeInterface_getNativeLibraryVersion(JNIEnv *env, jobject object) {
+    return env->NewStringUTF(jSSC_NATIVE_LIB_VERSION);
+}
 
 /* OK */
 /*
