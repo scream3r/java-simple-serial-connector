@@ -24,7 +24,9 @@
  */
 package jssc;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -373,6 +375,20 @@ public class SerialPort {
     public boolean writeString(String string) throws SerialPortException {
         checkPortOpened("writeString()");
         return writeBytes(string.getBytes());
+    }
+
+    /**
+     * Write String to port
+     *
+     * @return If the operation is successfully completed, the method returns true, otherwise false
+     *
+     * @throws SerialPortException
+     *
+     * @since 2.8.0
+     */
+    public boolean writeString(String string, String charsetName) throws SerialPortException, UnsupportedEncodingException {
+        checkPortOpened("writeString()");
+        return writeBytes(string.getBytes(charsetName));
     }
 
     /**
