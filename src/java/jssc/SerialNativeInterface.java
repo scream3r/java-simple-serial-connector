@@ -297,7 +297,7 @@ public class SerialNativeInterface {
     /**
      * Get jSSC native library version
      *
-     * @return Version base number. The native lib version for jSSC-2.8.0 should be 2.8 for example
+     * @return native lib version (for jSSC-2.8.0 should be 2.8 for example)
      *
      * @since 2.8.0
      */
