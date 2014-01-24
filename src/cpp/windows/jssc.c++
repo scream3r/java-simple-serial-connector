@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2014.
+ * Â© Alexey Sokolov (scream3r), 2010-2014.
  *
  * This file is part of jSSC.
  *
