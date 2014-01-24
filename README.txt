@@ -1,4 +1,4 @@
-jSSC-2.7.0 Release version (20.01.2014)
+jSSC-2.8.0 Release version (24.01.2014)
 
 This version contains native libs for Windows(x86, x86-64), Linux(x86, x86-64, ARM soft & hard float), Solaris(x86, x86-64), Mac OS X(x86, x86-64, PPC, PPC64).
 All native libs contains in the jssc.jar file and you don't need manage native libs manually.
@@ -7,6 +7,11 @@ In this build:
 
 	Fixes:
 		* Important! Fixed bug with port handles potential leakage
+		
+	Additions:
+		* Added method "writeString(String string, String charsetName)"
+		* Added method "getNativeLibraryVersion" in "SerialNativeInterface" class
+		* Enabled Java and Native libraries versions mismatch check
 		
 With Best Regards, Sokolov Alexey aka scream3r.
 
