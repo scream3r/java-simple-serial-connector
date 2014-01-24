@@ -30,6 +30,13 @@
 //#include <iostream>
 
 /*
+ * Get native library version
+ */
+JNIEXPORT jstring JNICALL Java_jssc_SerialNativeInterface_getNativeLibraryVersion(JNIEnv *env, jobject object) {
+    return env->NewStringUTF(jSSC_NATIVE_LIB_VERSION);
+}
+
+/*
  * Port opening.
  *
  * In 2.2.0 added useTIOCEXCL (not used in Windows, only for compatibility with _nix version)

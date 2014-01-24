@@ -36,7 +36,7 @@ import java.io.InputStreamReader;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "2.7"; //jSSC-2.7.0 Release from 20.01.2014
+    private static final String libVersion = "2.8"; //jSSC-2.8.0 Release from 24.01.2014
     private static final String libMinorSuffix = "0"; //since 0.9.0
 
     public static final int OS_LINUX = 0;
@@ -168,8 +168,13 @@ public class SerialNativeInterface {
             }
         }
 
-        if(loadLib){
+        if (loadLib) {
             System.load(libFolderPath + fileSeparator + libName);
+            String versionBase = getLibraryBaseVersion();
+            String versionNative = getNativeLibraryVersion();
+            if (!versionBase.equals(versionNative)) {
+                System.err.println("Warning! jSSC Java and Native versions mismatch (Java: " + versionBase + ", Native: " + versionNative + ")");
+            }
         }
     }
 
@@ -288,6 +293,15 @@ public class SerialNativeInterface {
     public static String getLibraryMinorSuffix() {
         return libMinorSuffix;
     }
+
+    /**
+     * Get jSSC native library version
+     *
+     * @return Version base number. The native lib version for jSSC-2.8.0 should be 2.8 for example
+     *
+     * @since 2.8.0
+     */
+    public static native String getNativeLibraryVersion();
 
     /**
      * Open port
