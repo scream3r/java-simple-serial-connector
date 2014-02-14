@@ -195,6 +195,14 @@ JNIEXPORT jintArray JNICALL Java_jssc_SerialNativeInterface_getLinesStatus
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_sendBreak
   (JNIEnv *, jobject, jlong, jint);
 
+/*
+ * Class:     jssc_SerialNativeInterface
+ * Method:    getPortProperties
+ * Signature: (Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getPortProperties
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif
