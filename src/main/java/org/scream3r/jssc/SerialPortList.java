@@ -22,16 +22,18 @@
  * e-mail: scream3r.org@gmail.com
  * web-site: http://scream3r.org | http://code.google.com/p/java-simple-serial-connector/
  */
-package jssc;
+package org.scream3r.jssc;
 
 import java.io.File;
 import java.util.Comparator;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import jssc.SerialNativeAccess;
+import jssc.SerialNativeInterface;
 
 /**
  *
- * @author scream3r
+ * @author scream3r, vogt31337@googlemail.com
  */
 public class SerialPortList {
 
@@ -40,8 +42,8 @@ public class SerialPortList {
     private static final String PORTNAMES_PATH;
 
     static {
-        serialInterface = new SerialNativeInterface();
-        switch (SerialNativeInterface.getOsType()) {
+        serialInterface = SerialNativeAccess.getInstance().getInterface();
+        switch (SerialNativeAccess.getInstance().getOsType()) {
             case SerialNativeInterface.OS_LINUX: {
                 PORTNAMES_REGEXP = Pattern.compile("(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO)[0-9]{1,3}");
                 PORTNAMES_PATH = "/dev/";
@@ -290,7 +292,7 @@ public class SerialPortList {
         if(searchPath == null || pattern == null || comparator == null){
             return new String[]{};
         }
-        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS){
+        if(SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_WINDOWS){
             return getWindowsPortNames(pattern, comparator);
         }
         return getUnixBasedPortNames(searchPath, pattern, comparator);
