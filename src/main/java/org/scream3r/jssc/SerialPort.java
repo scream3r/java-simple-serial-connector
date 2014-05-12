@@ -22,11 +22,12 @@
  * e-mail: scream3r.org@gmail.com
  * web-site: http://scream3r.org | http://code.google.com/p/java-simple-serial-connector/
  */
-package jssc;
+package org.scream3r.jssc;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
+import jssc.SerialNativeAccess;
+import jssc.SerialNativeInterface;
 
 /**
  *
@@ -117,7 +118,7 @@ public class SerialPort {
 
     public SerialPort(String portName) {
         this.portName = portName;
-        serialInterface = new SerialNativeInterface();
+        serialInterface = SerialNativeAccess.getInstance().getInterface();
     }
 
     /**
@@ -262,9 +263,9 @@ public class SerialPort {
      */
     public boolean setEventsMask(int mask) throws SerialPortException {
         checkPortOpened("setEventsMask()");
-        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_LINUX ||
-           SerialNativeInterface.getOsType() == SerialNativeInterface.OS_SOLARIS ||
-           SerialNativeInterface.getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
+        if(SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_LINUX ||
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_SOLARIS ||
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
             linuxMask = mask;
             if(mask > 0){
                 maskAssigned = true;
@@ -296,9 +297,9 @@ public class SerialPort {
      */
     public int getEventsMask() throws SerialPortException {
         checkPortOpened("getEventsMask()");
-        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_LINUX ||
-           SerialNativeInterface.getOsType() == SerialNativeInterface.OS_SOLARIS ||
-           SerialNativeInterface.getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
+        if(SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_LINUX ||
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_SOLARIS ||
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
             return linuxMask;
         }
         return serialInterface.getEventsMask(portHandle);
@@ -1039,9 +1040,9 @@ public class SerialPort {
      * @since 0.8
      */
     private EventThread getNewEventThread() {
-        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_LINUX ||
-           SerialNativeInterface.getOsType() == SerialNativeInterface.OS_SOLARIS ||
-           SerialNativeInterface.getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
+        if(SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_LINUX ||
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_SOLARIS ||
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
             return new LinuxEventThread();
         }
         return new EventThread();

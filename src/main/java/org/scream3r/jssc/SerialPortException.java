@@ -22,14 +22,16 @@
  * e-mail: scream3r.org@gmail.com
  * web-site: http://scream3r.org | http://code.google.com/p/java-simple-serial-connector/
  */
-package jssc;
+package org.scream3r.jssc;
 
 /**
  *
- * @author scream3r
+ * @author scream3r, vogt31337@googlemail.com
  */
 public class SerialPortException extends Exception {
 
+    final static long serialVersionUID = 5843574354687324684l;
+    
     final public static String TYPE_PORT_ALREADY_OPENED = "Port already opened";
     final public static String TYPE_PORT_NOT_OPENED = "Port not opened";
     final public static String TYPE_CANT_SET_MASK = "Can't set mask";
