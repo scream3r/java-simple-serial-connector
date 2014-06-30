@@ -399,13 +399,23 @@ public class SerialNativeInterface {
 
     /**
      * Read data from port
-     * 
+     *
      * @param handle handle of opened port
      * @param byteCount count of bytes required to read
-     * 
+     *
      * @return Method returns the array of read bytes
      */
     public native byte[] readBytes(long handle, int byteCount);
+
+    /**
+     * Read data from port
+     *
+     * @param handle handle of opened port
+     * @param buffer
+     *
+     * @return Method returns bytes read
+     */
+    public native int read(long handle, byte[] buffer);
 
     /**
      * Write data to port
