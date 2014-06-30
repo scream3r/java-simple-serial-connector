@@ -549,6 +549,36 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     return returnArray;
 }
 
+/*
+ * Read bytes
+ */
+JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_read
+(JNIEnv *env, jobject object, jlong portHandle, jbyteArray buffer) {
+
+	jbyte* jBuffer = env->GetByteArrayElements(buffer, JNI_FALSE);
+	jint bufferSize = env->GetArrayLength(buffer);
+	int bytesRead, end;
+	fd_set read_fd_set;
+
+	do {
+		end = 1;
+		FD_ZERO(&read_fd_set);
+		FD_SET(portHandle, &read_fd_set);
+		select(portHandle + 1, &read_fd_set, NULL, NULL, NULL);
+		if ((bytesRead = read(portHandle, jBuffer, bufferSize)) <= 0) {
+			if ((bytesRead < 0) && (errno == EINTR))
+				end = 0;
+		}
+
+	} while (!end);
+
+	env->ReleaseByteArrayElements(buffer, jBuffer, 0);
+	return bytesRead;
+
+
+}
+
+
 /* OK */
 /*
  * Get bytes count in serial port buffers (Input and Output)

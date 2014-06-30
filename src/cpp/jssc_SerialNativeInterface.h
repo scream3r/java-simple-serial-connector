@@ -141,6 +141,14 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
 
 /*
  * Class:     jssc_SerialNativeInterface
+ * Method:    read
+ * Signature: (J[B)I
+ */
+JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_read
+  (JNIEnv *, jobject, jlong, jbyteArray);
+
+/*
+ * Class:     jssc_SerialNativeInterface
  * Method:    writeBytes
  * Signature: (J[B)Z
  */
