@@ -428,7 +428,7 @@ public class SerialPort {
      * Read byte array from port
      *
      * @param byteCount count of bytes for reading
-     * 
+     *
      * @return byte array with "byteCount" length
      *
      * @throws SerialPortException
@@ -436,6 +436,20 @@ public class SerialPort {
     public byte[] readBytes(int byteCount) throws SerialPortException {
         checkPortOpened("readBytes()");
         return serialInterface.readBytes(portHandle, byteCount);
+    }
+
+    /**
+     * Read byte array from port
+     *
+     * @param buffer, read all bytes available into it
+     *
+     * @return bytes read
+     *
+     * @throws SerialPortException
+     */
+    public int read(byte[] buffer) throws SerialPortException {
+        checkPortOpened("read()");
+        return serialInterface.read(portHandle, buffer);
     }
 
     /**
