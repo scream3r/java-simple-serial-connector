@@ -24,11 +24,13 @@
  */
 package org.scream3r.jssc;
 
+import java.io.IOException;
+
 /**
  *
  * @author scream3r, vogt31337@googlemail.com
  */
-public class SerialPortException extends Exception {
+public class SerialPortException extends IOException {
 
     final static long serialVersionUID = 5843574354687324684l;
     
@@ -62,6 +64,10 @@ public class SerialPortException extends Exception {
      * @since 2.3.0
      */
     final public static String TYPE_INCORRECT_SERIAL_PORT = "Incorrect serial port";
+    /**
+     * @since 2.8.1
+     */
+    final public static String TYPE_CANT_CLOSE_PORT = "Can't close native port";
 
     private String portName;
     private String methodName;

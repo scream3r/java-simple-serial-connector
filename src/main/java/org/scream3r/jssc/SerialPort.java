@@ -24,8 +24,10 @@
  */
 package org.scream3r.jssc;
 
+import java.io.Closeable;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+
 import jssc.SerialNativeAccess;
 import jssc.SerialNativeInterface;
 
@@ -33,7 +35,7 @@ import jssc.SerialNativeInterface;
  *
  * @author scream3r
  */
-public class SerialPort {
+public class SerialPort implements Closeable {
 
     private SerialNativeInterface serialInterface;
     private SerialPortEventListener eventListener;
@@ -1079,11 +1081,15 @@ public class SerialPort {
     }
 
     /**
-     * Close port. This method deletes event listener first, then closes the port
+     * Close the serial port. Removes the event listener if one exists has been
+     * added, then closes the underlying native port.
      *
-     * @return If the operation is successfully completed, the method returns true, otherwise false
-     * 
+     * @return whether or not the operation has been successfully completed
+     *
      * @throws SerialPortException
+     *
+     * @deprecated
+     * @see #close()
      */
     public boolean closePort() throws SerialPortException {
         checkPortOpened("closePort()");
@@ -1096,6 +1102,20 @@ public class SerialPort {
             portOpened = false;
         }
         return returnValue;
+    }
+
+    /**
+     * Close the serial port. Removes the event listener if one exists has been
+     * added, then closes the underlying native port.
+     *
+     * @throws SerialPortException
+     */
+    public void close() throws SerialPortException {
+        boolean portClosed = closePort();
+        if(!portClosed){
+            throw new SerialPortException(portName, "close()",
+                    SerialPortException.TYPE_CANT_CLOSE_PORT);
+        }
     }
 
     private EventThread eventThread;

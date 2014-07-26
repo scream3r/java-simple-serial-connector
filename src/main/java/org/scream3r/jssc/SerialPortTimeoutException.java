@@ -24,11 +24,13 @@
  */
 package org.scream3r.jssc;
 
+import java.io.IOException;
+
 /**
  *
  * @author scream3r, vogt31337@googlemail.com
  */
-public class SerialPortTimeoutException extends Exception {
+public class SerialPortTimeoutException extends IOException {
 
     final static long serialVersionUID = -1584357967321684324l;
     
