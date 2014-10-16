@@ -37,7 +37,7 @@ import java.io.InputStreamReader;
 
 public class SerialNativeAccess {
     private int osType = -1;
-    private static SerialNativeInterface sni = new SerialNativeInterface();
+    private static final SerialNativeInterface sni = new SerialNativeInterface();
     private static SerialNativeAccess instance = null;
     
     public static SerialNativeAccess getInstance() {
@@ -79,36 +79,40 @@ public class SerialNativeAccess {
             osName = "mac_os_x";
             osType = SerialNativeInterface.OS_MAC_OS_X;
         }//<- since 0.9.0
-
-        if(architecture.equals("i386") || architecture.equals("i686")){
-            architecture = "x86";
-        }
-        else if(architecture.equals("amd64") || architecture.equals("universal")){//os.arch "universal" since 2.6.0
-            architecture = "x86_64";
-        }
-        else if(architecture.equals("arm")) {//since 2.1.0
-            String floatStr = "sf";
-            if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
-                floatStr = "hf";
-            }
-            else {
-                try {
-                    Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
-                    String buffer = "";
-                    while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
-                        if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
-                            floatStr = "hf";
-                            break;
+        switch (architecture) {
+            case "i386":
+            case "i686":
+                architecture = "x86";
+                break;
+            case "amd64":
+            case "universal":
+                //os.arch "universal" since 2.6.0
+                architecture = "x86_64";
+                break;
+            case "arm":
+                //since 2.1.0
+                String floatStr = "sf";
+                if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
+                    floatStr = "hf";
+                }
+                else {
+                    try {
+                        Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
+                        String buffer;
+                        while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
+                            if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
+                                floatStr = "hf";
+                                break;
+                            }
                         }
+                        reader.close();
                     }
-                    reader.close();
-                }
-                catch (Exception ex) {
-                    //Do nothing
-                }
-            }
-            architecture = "arm" + floatStr;
+                    catch (Exception ex) {
+                        //Do nothing
+                    }
+                }   architecture = "arm" + floatStr;
+                break;
         }
         
         libFolderPath = libRootFolder + fileSeparator + ".jssc" + fileSeparator + osName;
@@ -232,6 +236,7 @@ public class SerialNativeAccess {
     /**
      * Get OS type (OS_LINUX || OS_WINDOWS || OS_SOLARIS)
      * 
+     * @return 
      * @since 0.8
      */
     public int getOsType() {

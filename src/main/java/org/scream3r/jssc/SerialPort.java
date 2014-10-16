@@ -35,10 +35,10 @@ import jssc.SerialNativeInterface;
  */
 public class SerialPort {
 
-    private SerialNativeInterface serialInterface;
+    private final SerialNativeInterface serialInterface;
     private SerialPortEventListener eventListener;
     private long portHandle;
-    private String portName;
+    private final String portName;
     private boolean portOpened = false;
     private boolean maskAssigned = false;
     private boolean eventListenerAdded = false;
@@ -234,6 +234,7 @@ public class SerialPort {
      * parameter <b>"PURGE_RXCLEAR | PURGE_TXCLEAR"</b>.
      * <br><b>Note: </b>some devices or drivers may not support this function
      *
+     * @param flags
      * @return If the operation is successfully completed, the method returns true, otherwise false. 
      *
      * @throws SerialPortException
@@ -257,6 +258,7 @@ public class SerialPort {
      * For example if messages about data receipt and CTS and DSR status changing
      * shall be received, it is required to set the mask - <b>"MASK_RXCHAR | MASK_CTS | MASK_DSR"</b>
      * 
+     * @param mask
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @throws SerialPortException
@@ -267,24 +269,14 @@ public class SerialPort {
            SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_SOLARIS ||
            SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
             linuxMask = mask;
-            if(mask > 0){
-                maskAssigned = true;
-            }
-            else {
-                maskAssigned = false;
-            }
+            maskAssigned = mask > 0;
             return true;
         }
         boolean returnValue = serialInterface.setEventsMask(portHandle, mask);
         if(!returnValue){
             throw new SerialPortException(portName, "setEventsMask()", SerialPortException.TYPE_CANT_SET_MASK);
         }
-        if(mask > 0){
-            maskAssigned = true;
-        }
-        else {
-            maskAssigned = false;
-        }
+        maskAssigned = mask > 0;
         return returnValue;
     }
 
@@ -317,6 +309,7 @@ public class SerialPort {
     /**
      * Change RTS line state. Set "true" for switching ON and "false" for switching OFF RTS line
      *
+     * @param enabled
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @throws SerialPortException
@@ -329,6 +322,7 @@ public class SerialPort {
     /**
      * Change DTR line state. Set "true" for switching ON and "false" for switching OFF DTR line
      *
+     * @param enabled
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @throws SerialPortException
@@ -341,6 +335,7 @@ public class SerialPort {
     /**
      * Write byte array to port
      *
+     * @param buffer
      * @return If the operation is successfully completed, the method returns true, otherwise false
      * 
      * @throws SerialPortException
@@ -353,6 +348,7 @@ public class SerialPort {
     /**
      * Write single byte to port
      *
+     * @param singleByte
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @throws SerialPortException
@@ -367,6 +363,7 @@ public class SerialPort {
     /**
      * Write String to port
      *
+     * @param string
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @throws SerialPortException
@@ -381,9 +378,12 @@ public class SerialPort {
     /**
      * Write String to port
      *
+     * @param string
+     * @param charsetName
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @throws SerialPortException
+     * @throws java.io.UnsupportedEncodingException
      *
      * @since 2.8.0
      */
@@ -395,6 +395,7 @@ public class SerialPort {
     /**
      * Write int value (in range from 0 to 255 (0x00 - 0xFF)) to port
      *
+     * @param singleInt
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @throws SerialPortException
@@ -409,6 +410,7 @@ public class SerialPort {
     /**
      * Write int array (in range from 0 to 255 (0x00 - 0xFF)) to port
      *
+     * @param buffer
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @throws SerialPortException
@@ -474,6 +476,7 @@ public class SerialPort {
      * Read Hex string from port with setted separator (example if separator is "::": FF::0A::FF)
      *
      * @param byteCount count of bytes for reading
+     * @param separator
      *
      * @return byte array with "byteCount" length converted to Hexadecimal String
      *
@@ -629,6 +632,7 @@ public class SerialPort {
      * Read Hex string from port with setted separator (example if separator is "::": FF::0A::FF)
      *
      * @param byteCount count of bytes for reading
+     * @param separator
      * @param timeout timeout in milliseconds
      *
      * @return byte array with "byteCount" length converted to Hexadecimal String
@@ -739,6 +743,7 @@ public class SerialPort {
     /**
      * Read all available bytes from port like a Hex String with setted separator
      *
+     * @param separator
      * @return If input buffer is empty <b>null</b> will be returned, else byte array with all data from port converted to Hex String
      *
      * @throws SerialPortException
@@ -822,6 +827,7 @@ public class SerialPort {
      * Set flow control mode. For required mode use variables with prefix <b>"FLOWCONTROL_"</b>.
      * Example of hardware flow control mode(RTS/CTS): setFlowControlMode(FLOWCONTROL_RTSCTS_IN | FLOWCONTROL_RTSCTS_OUT);
      *
+     * @param mask
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @throws SerialPortException
@@ -905,12 +911,7 @@ public class SerialPort {
      */
     public boolean isCTS() throws SerialPortException {
         checkPortOpened("isCTS()");
-        if(serialInterface.getLinesStatus(portHandle)[0] == 1){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return serialInterface.getLinesStatus(portHandle)[0] == 1;
     }
 
     /**
@@ -922,12 +923,7 @@ public class SerialPort {
      */
     public boolean isDSR() throws SerialPortException {
         checkPortOpened("isDSR()");
-        if(serialInterface.getLinesStatus(portHandle)[1] == 1){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return serialInterface.getLinesStatus(portHandle)[1] == 1;
     }
 
     /**
@@ -939,12 +935,7 @@ public class SerialPort {
      */
     public boolean isRING() throws SerialPortException {
         checkPortOpened("isRING()");
-        if(serialInterface.getLinesStatus(portHandle)[2] == 1){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return serialInterface.getLinesStatus(portHandle)[2] == 1;
     }
 
     /**
@@ -956,12 +947,7 @@ public class SerialPort {
      */
     public boolean isRLSD() throws SerialPortException {
         checkPortOpened("isRLSD()");
-        if(serialInterface.getLinesStatus(portHandle)[3] == 1){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return serialInterface.getLinesStatus(portHandle)[3] == 1;
     }
 
     /**
@@ -970,6 +956,7 @@ public class SerialPort {
      * be in charge for handling of occurred events. This method will independently
      * set the mask in <b>"MASK_RXCHAR"</b> state if it was not set beforehand
      *
+     * @param listener
      * @throws SerialPortException
      */
     public void addEventListener(SerialPortEventListener listener) throws SerialPortException {
@@ -982,6 +969,8 @@ public class SerialPort {
      * charge for handling of occurred events. Also events mask shall be sent to
      * this method, to do it use variables with prefix <b>"MASK_"</b> for example <b>"MASK_RXCHAR"</b>
      *
+     * @param listener
+     * @param mask
      * @see #setEventsMask(int) setEventsMask(int mask)
      *
      * @throws SerialPortException
@@ -1108,17 +1097,17 @@ public class SerialPort {
         public void run() {
             while(!threadTerminated){
                 int[][] eventArray = waitEvents();
-                for(int i = 0; i < eventArray.length; i++){
-                    if(eventArray[i][0] > 0 && !threadTerminated){
-                        eventListener.serialEvent(new SerialPortEvent(portName, eventArray[i][0], eventArray[i][1]));
+                for (int[] event : eventArray) {
+                    if (event[0] > 0 && !threadTerminated) {
+                        eventListener.serialEvent(new SerialPortEvent(portName, event[0], event[1]));
                         //FIXME
                         /*if(methodErrorOccurred != null){
-                            try {
-                                methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
-                            }
-                            catch (Exception ex) {
-                                System.out.println(ex);
-                            }
+                        try {
+                        methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
+                        }
+                        catch (Exception ex) {
+                        System.out.println(ex);
+                        }
                         }*/
                     }
                 }
@@ -1160,9 +1149,9 @@ public class SerialPort {
         //Need to get initial states
         public LinuxEventThread(){
             int[][] eventArray = waitEvents();
-            for(int i = 0; i < eventArray.length; i++){
-                int eventType = eventArray[i][0];
-                int eventValue = eventArray[i][1];
+            for (int[] event : eventArray) {
+                int eventType = event[0];
+                int eventValue = event[1];
                 switch(eventType){
                     case INTERRUPT_BREAK:
                         interruptBreak = eventValue;
@@ -1202,10 +1191,10 @@ public class SerialPort {
                 int mask = getLinuxMask();
                 boolean interruptTxChanged = false;
                 int errorMask = 0;
-                for(int i = 0; i < eventArray.length; i++){
+                for (int[] event : eventArray) {
                     boolean sendEvent = false;
-                    int eventType = eventArray[i][0];
-                    int eventValue = eventArray[i][1];
+                    int eventType = event[0];
+                    int eventValue = event[1];
                     if(eventType > 0 && !super.threadTerminated){
                         switch(eventType){
                             case INTERRUPT_BREAK:
@@ -1284,10 +1273,10 @@ public class SerialPort {
                                     sendEvent = true;
                                 }
                                 break;
-                            /*case MASK_RXFLAG:
+                                /*case MASK_RXFLAG:
                                 //Do nothing at this moment
                                 if(((mask & MASK_RXFLAG) == MASK_RXFLAG) && (eventValue > 0)){
-                                    sendEvent = true;
+                                sendEvent = true;
                                 }
                                 break;*/
                             case MASK_TXEMPTY:
