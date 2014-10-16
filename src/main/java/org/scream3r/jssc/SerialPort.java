@@ -267,24 +267,14 @@ public class SerialPort {
            SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_SOLARIS ||
            SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
             linuxMask = mask;
-            if(mask > 0){
-                maskAssigned = true;
-            }
-            else {
-                maskAssigned = false;
-            }
+            maskAssigned = mask > 0;
             return true;
         }
         boolean returnValue = serialInterface.setEventsMask(portHandle, mask);
         if(!returnValue){
             throw new SerialPortException(portName, "setEventsMask()", SerialPortException.TYPE_CANT_SET_MASK);
         }
-        if(mask > 0){
-            maskAssigned = true;
-        }
-        else {
-            maskAssigned = false;
-        }
+        maskAssigned = mask > 0;
         return returnValue;
     }
 
@@ -905,12 +895,7 @@ public class SerialPort {
      */
     public boolean isCTS() throws SerialPortException {
         checkPortOpened("isCTS()");
-        if(serialInterface.getLinesStatus(portHandle)[0] == 1){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return serialInterface.getLinesStatus(portHandle)[0] == 1;
     }
 
     /**
@@ -922,12 +907,7 @@ public class SerialPort {
      */
     public boolean isDSR() throws SerialPortException {
         checkPortOpened("isDSR()");
-        if(serialInterface.getLinesStatus(portHandle)[1] == 1){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return serialInterface.getLinesStatus(portHandle)[1] == 1;
     }
 
     /**
@@ -939,12 +919,7 @@ public class SerialPort {
      */
     public boolean isRING() throws SerialPortException {
         checkPortOpened("isRING()");
-        if(serialInterface.getLinesStatus(portHandle)[2] == 1){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return serialInterface.getLinesStatus(portHandle)[2] == 1;
     }
 
     /**
@@ -956,12 +931,7 @@ public class SerialPort {
      */
     public boolean isRLSD() throws SerialPortException {
         checkPortOpened("isRLSD()");
-        if(serialInterface.getLinesStatus(portHandle)[3] == 1){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return serialInterface.getLinesStatus(portHandle)[3] == 1;
     }
 
     /**
