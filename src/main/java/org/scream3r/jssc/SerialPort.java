@@ -1097,17 +1097,17 @@ public class SerialPort {
         public void run() {
             while(!threadTerminated){
                 int[][] eventArray = waitEvents();
-                for(int i = 0; i < eventArray.length; i++){
-                    if(eventArray[i][0] > 0 && !threadTerminated){
-                        eventListener.serialEvent(new SerialPortEvent(portName, eventArray[i][0], eventArray[i][1]));
+                for (int[] event : eventArray) {
+                    if (event[0] > 0 && !threadTerminated) {
+                        eventListener.serialEvent(new SerialPortEvent(portName, event[0], event[1]));
                         //FIXME
                         /*if(methodErrorOccurred != null){
-                            try {
-                                methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
-                            }
-                            catch (Exception ex) {
-                                System.out.println(ex);
-                            }
+                        try {
+                        methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
+                        }
+                        catch (Exception ex) {
+                        System.out.println(ex);
+                        }
                         }*/
                     }
                 }
@@ -1149,9 +1149,9 @@ public class SerialPort {
         //Need to get initial states
         public LinuxEventThread(){
             int[][] eventArray = waitEvents();
-            for(int i = 0; i < eventArray.length; i++){
-                int eventType = eventArray[i][0];
-                int eventValue = eventArray[i][1];
+            for (int[] event : eventArray) {
+                int eventType = event[0];
+                int eventValue = event[1];
                 switch(eventType){
                     case INTERRUPT_BREAK:
                         interruptBreak = eventValue;
@@ -1191,10 +1191,10 @@ public class SerialPort {
                 int mask = getLinuxMask();
                 boolean interruptTxChanged = false;
                 int errorMask = 0;
-                for(int i = 0; i < eventArray.length; i++){
+                for (int[] event : eventArray) {
                     boolean sendEvent = false;
-                    int eventType = eventArray[i][0];
-                    int eventValue = eventArray[i][1];
+                    int eventType = event[0];
+                    int eventValue = event[1];
                     if(eventType > 0 && !super.threadTerminated){
                         switch(eventType){
                             case INTERRUPT_BREAK:
@@ -1273,10 +1273,10 @@ public class SerialPort {
                                     sendEvent = true;
                                 }
                                 break;
-                            /*case MASK_RXFLAG:
+                                /*case MASK_RXFLAG:
                                 //Do nothing at this moment
                                 if(((mask & MASK_RXFLAG) == MASK_RXFLAG) && (eventValue > 0)){
-                                    sendEvent = true;
+                                sendEvent = true;
                                 }
                                 break;*/
                             case MASK_TXEMPTY:
