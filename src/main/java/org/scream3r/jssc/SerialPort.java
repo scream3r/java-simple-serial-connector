@@ -35,10 +35,10 @@ import jssc.SerialNativeInterface;
  */
 public class SerialPort {
 
-    private SerialNativeInterface serialInterface;
+    private final SerialNativeInterface serialInterface;
     private SerialPortEventListener eventListener;
     private long portHandle;
-    private String portName;
+    private final String portName;
     private boolean portOpened = false;
     private boolean maskAssigned = false;
     private boolean eventListenerAdded = false;

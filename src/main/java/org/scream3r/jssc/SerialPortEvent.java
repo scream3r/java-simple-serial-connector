@@ -30,9 +30,9 @@ package org.scream3r.jssc;
  */
 public class SerialPortEvent {
 
-    private String portName;
-    private int eventType;
-    private int eventValue;
+    private final String portName;
+    private final int eventType;
+    private final int eventValue;
 
     public static final int RXCHAR = 1;
     public static final int RXFLAG = 2;

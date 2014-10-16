@@ -32,9 +32,9 @@ public class SerialPortTimeoutException extends Exception {
 
     final static long serialVersionUID = -1584357967321684324l;
     
-    private String portName;
-    private String methodName;
-    private int timeoutValue;
+    private final String portName;
+    private final String methodName;
+    private final int timeoutValue;
 
     public SerialPortTimeoutException(String portName, String methodName, int timeoutValue) {
         super("Port name - " + portName + "; Method name - " + methodName + "; Serial port operation timeout (" + timeoutValue + " ms).");

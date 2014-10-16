@@ -37,7 +37,7 @@ import java.io.InputStreamReader;
 
 public class SerialNativeAccess {
     private int osType = -1;
-    private static SerialNativeInterface sni = new SerialNativeInterface();
+    private static final SerialNativeInterface sni = new SerialNativeInterface();
     private static SerialNativeAccess instance = null;
     
     public static SerialNativeAccess getInstance() {

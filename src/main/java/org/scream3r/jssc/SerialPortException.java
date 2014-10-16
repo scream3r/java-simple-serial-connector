@@ -63,9 +63,9 @@ public class SerialPortException extends Exception {
      */
     final public static String TYPE_INCORRECT_SERIAL_PORT = "Incorrect serial port";
 
-    private String portName;
-    private String methodName;
-    private String exceptionType;
+    private final String portName;
+    private final String methodName;
+    private final String exceptionType;
 
     public SerialPortException(String portName, String methodName, String exceptionType){
         super("Port name - " + portName + "; Method name - " + methodName + "; Exception type - " + exceptionType + ".");
