@@ -99,7 +99,7 @@ public class SerialNativeAccess {
                     try {
                         Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
                         BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
-                        String buffer = "";
+                        String buffer;
                         while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
                             if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
                                 floatStr = "hf";
