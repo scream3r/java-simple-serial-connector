@@ -76,6 +76,8 @@ public class SerialPortException extends Exception {
 
     /**
      * Getting port name during operation with which the exception was called
+     * 
+     * @return Return the port name.
      */
     public String getPortName(){
         return portName;
@@ -83,6 +85,8 @@ public class SerialPortException extends Exception {
 
     /**
      * Getting method name during execution of which the exception was called
+     * 
+     * @return Return the method name.
      */
     public String getMethodName(){
         return methodName;
@@ -90,6 +94,8 @@ public class SerialPortException extends Exception {
 
     /**
      * Getting exception type
+     * 
+     * @return Return the exception type.
      */
     public String getExceptionType(){
         return exceptionType;

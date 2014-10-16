@@ -232,6 +232,7 @@ public class SerialNativeAccess {
     /**
      * Get OS type (OS_LINUX || OS_WINDOWS || OS_SOLARIS)
      * 
+     * @return 
      * @since 0.8
      */
     public int getOsType() {

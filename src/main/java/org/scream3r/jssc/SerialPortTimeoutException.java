@@ -45,6 +45,8 @@ public class SerialPortTimeoutException extends Exception {
 
     /**
      * Getting port name during operation with which the exception was called
+     * 
+     * @return Return the port name.
      */
     public String getPortName(){
         return portName;
@@ -52,6 +54,8 @@ public class SerialPortTimeoutException extends Exception {
 
     /**
      * Getting method name during execution of which the exception was called
+     * 
+     * @return Return the method name.
      */
     public String getMethodName(){
         return methodName;
@@ -59,6 +63,8 @@ public class SerialPortTimeoutException extends Exception {
 
     /**
      * Getting timeout value in millisecond
+     * 
+     * @return Return the timeout value in milliseconds.
      */
     public int getTimeoutValue(){
         return timeoutValue;
