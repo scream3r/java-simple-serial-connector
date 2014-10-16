@@ -38,16 +38,16 @@ import java.io.InputStreamReader;
 public class SerialNativeAccess {
     private int osType = -1;
     private static SerialNativeInterface sni = new SerialNativeInterface();
-    private static SerialNativeAccess instance = null;
-    
-    public static SerialNativeAccess getInstance() {
-        if (SerialNativeAccess.instance == null) {
-            SerialNativeAccess.instance = new SerialNativeAccess();
-        } 
-        return SerialNativeAccess.instance;
+
+    private static class LazyHolder {
+        private static final SerialNativeAccess INSTANCE = new SerialNativeAccess();
     }
     
-    public SerialNativeAccess() {
+    public static SerialNativeAccess getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+    
+    private SerialNativeAccess() {
         String libFolderPath;
         String libName;
 
