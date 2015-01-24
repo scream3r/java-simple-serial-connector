@@ -7,7 +7,25 @@
     <packaging>bundle</packaging>
     
     <name>jssc</name>
+	
+    <description>
+	jSSC (Java Simple Serial Connector) - library for working with serial ports from Java. jSSC support Win32(Win98-Win8), Win64, Linux(x86, x86-64, ARM), Solaris(x86, x86-64), Mac OS X 10.5 and higher(x86, x86-64, PPC, PPC64).
+    </description>
     
+	<url>https://code.google.com/p/java-simple-serial-connector/</url>
+	
+	<scm>
+		<connection>https://github.com/scream3r/java-simple-serial-connector.git</connection>
+		<url>https://github.com/scream3r/java-simple-serial-connector</url>
+	</scm>
+	  
+	<licenses>
+	  <license>
+		<name>GNU Lesser General Public License</name>
+		<url>http://www.gnu.org/licenses/lgpl.html</url>
+      </license>
+    </licenses>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
