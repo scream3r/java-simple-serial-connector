@@ -654,7 +654,12 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_sendBreak
  */
 int getLinesStatus(jlong portHandle) {
     int statusLines;
-    ioctl(portHandle, TIOCMGET, &statusLines);
+
+    if(ioctl(portHandle, TIOCMGET, &statusLines) != 0) {
+        // return 0 in case of failure, otherwise statusLines stays unchanged
+        return 0;
+    }
+
     return statusLines;
 }
 
