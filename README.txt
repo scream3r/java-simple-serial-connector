@@ -1,4 +1,32 @@
-jSSC-2.8.0 Release version (24.01.2014)
+[VinceOPS] jSSC-2.8.0 - First Fork and Changes (28.01.2015)
+
+Essentially working on Linux (PC & ARM), this fork will contain small fixes/changes which match my projetcs requirements.
+
+In this build:
+	Fixes:
+		* DSR "off" event (DSR state 0) was not emitted using (PC) Ubuntu 13.10 and (ARM SF) Debian Wheezy.
+		* Using the current JVM "arm type" (Soft-Float / Hard-Float) to define which library (sf or hf) should be loaded. Indeed, on MULTIARCH systems (like Debian), it is possible to use a Soft-Float JVM whereas the rootfs is Hard-Float. Reading /proc/self/exe ELF format tells what is the rootfs "arm type", not the JVM (loading an ARMHF library with an ARMSF JVM obviously fails).
+
+Note:
+	How did I compile the .so libraries on my PC (x86_64) running on Ubuntu 13.10:
+		* PC (x86_64): g++ jssc.cpp  -I/<jdk_path>/include -I/<jdk_path>/include/linux -shared -fPIC -o libjSSC-2.8_x86_64.so
+		* PC (x86), using g++-multilib: g++ jssc.cpp  -I/usr/lib/jvm/jdk1.8.0_25/include -I/usr/lib/jvm/jdk1.8.0_25/include/linux -shared -fPIC -m32 -o libjSSC-2.8_x86.so
+
+		* ARM (SF): arm-linux-gnueabi-g++ jssc.cpp  -I/<jdk_path>/include -I/<jdk_path>/include/linux -shared -o libjSSC-2.8_armsf.so
+		* ARM (HF): arm-linux-gnueabihf-g++-4.8 jssc.cpp  -I/<jdk_path>/include -I/<jdk_path>/include/linux -shared -fPIC -o libjSSC-2.8_armhf.so
+
+		Any version of the ARM toolchain > 4.7 was fine.
+		Optimisation level 2 (-O2).
+
+
+
+
+
+============= Previous Builds ==============
+
+///////////////////////////////////////////
+//jSSC-2.8.0 Release version (24.01.2014)//
+///////////////////////////////////////////
 
 This version contains native libs for Windows(x86, x86-64), Linux(x86, x86-64, ARM soft & hard float), Solaris(x86, x86-64), Mac OS X(x86, x86-64, PPC, PPC64).
 All native libs contains in the jssc.jar file and you don't need manage native libs manually.
@@ -14,8 +42,6 @@ In this build:
 		* Enabled Java and Native libraries versions mismatch check
 		
 With Best Regards, Sokolov Alexey aka scream3r.
-
-============= Previous Builds ==============
 
 ///////////////////////////////////////////
 //jSSC-2.6.0 Release version (01.06.2013)//

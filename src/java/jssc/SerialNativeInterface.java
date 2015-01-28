@@ -122,7 +122,8 @@ public class SerialNativeInterface {
             }
             else {
                 try {
-                    Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
+                    // get the ELF format of the JVM binary to know which library should be loaded (soft-float or hard-float)
+                    Process readelfProcess = Runtime.getRuntime().exec("readelf -A " + System.getProperty("java.home") + "/bin/java");
                     BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
                     String buffer = "";
                     while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
