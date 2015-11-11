@@ -265,7 +265,8 @@ public class SerialPort {
         checkPortOpened("setEventsMask()");
         if(SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_LINUX ||
            SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_SOLARIS ||
-           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X || //since 0.9.0
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_FREEBSD){
             linuxMask = mask;
             if(mask > 0){
                 maskAssigned = true;
@@ -299,7 +300,8 @@ public class SerialPort {
         checkPortOpened("getEventsMask()");
         if(SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_LINUX ||
            SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_SOLARIS ||
-           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X || //since 0.9.0
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_FREEBSD){
             return linuxMask;
         }
         return serialInterface.getEventsMask(portHandle);
@@ -1042,7 +1044,8 @@ public class SerialPort {
     private EventThread getNewEventThread() {
         if(SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_LINUX ||
            SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_SOLARIS ||
-           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X){//since 0.9.0
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_MAC_OS_X || //since 0.9.0
+           SerialNativeAccess.getInstance().getOsType() == SerialNativeInterface.OS_FREEBSD){
             return new LinuxEventThread();
         }
         return new EventThread();

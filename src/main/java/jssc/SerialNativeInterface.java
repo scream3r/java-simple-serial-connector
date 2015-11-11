@@ -18,6 +18,7 @@ public class SerialNativeInterface {
     public static final int OS_WINDOWS = 1;
     public static final int OS_SOLARIS = 2;//since 0.9.0
     public static final int OS_MAC_OS_X = 3;//since 0.9.0
+    public static final int OS_FREEBSD = 4;
 
     /**
      * @since 2.3.0
