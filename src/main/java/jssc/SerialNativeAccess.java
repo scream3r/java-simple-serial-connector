@@ -79,6 +79,10 @@ public class SerialNativeAccess {
             osName = "mac_os_x";
             osType = SerialNativeInterface.OS_MAC_OS_X;
         }//<- since 0.9.0
+        else if(osName.equals("FreeBSD")){
+            osName = "freebsd";
+            osType = SerialNativeInterface.OS_FREEBSD;
+        }
 
         if(architecture.equals("i386") || architecture.equals("i686")){
             architecture = "x86";
@@ -87,28 +91,37 @@ public class SerialNativeAccess {
             architecture = "x86_64";
         }
         else if(architecture.equals("arm")) {//since 2.1.0
-            String floatStr = "sf";
-            if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
-                floatStr = "hf";
-            }
-            else {
-                try {
-                    Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
-                    String buffer = "";
-                    while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
-                        if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
-                            floatStr = "hf";
-                            break;
+            if(osName.equals("Linux")){
+                String floatStr = "sf";
+                if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
+                    floatStr = "hf";
+                }
+                else {
+                    try {
+                        Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
+                        String buffer = "";
+                        while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
+                            if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
+                                floatStr = "hf";
+                                break;
+                            }
                         }
+                        reader.close();
                     }
-                    reader.close();
+                    catch (Exception ex) {
+                        //Do nothing
+                    }
                 }
-                catch (Exception ex) {
-                    //Do nothing
-                }
+                architecture = "arm" + floatStr;
             }
-            architecture = "arm" + floatStr;
+            else if(osName.equals("FreeBSD")){
+                String floatStr = "";
+                if(javaLibPath.toLowerCase().contains("armhf")){
+                    floatStr = "hf";
+                }
+                architecture = "arm" + floatStr;
+            }
         }
         
         libFolderPath = libRootFolder + fileSeparator + ".jssc" + fileSeparator + osName;

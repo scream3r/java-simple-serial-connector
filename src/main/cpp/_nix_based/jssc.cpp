@@ -545,7 +545,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     FD_CLR(portHandle, &read_fd_set);
     jbyteArray returnArray = env->NewByteArray(byteCount);
     env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
-    delete lpBuffer;
+    delete[] lpBuffer;
     return returnArray;
 }
 
