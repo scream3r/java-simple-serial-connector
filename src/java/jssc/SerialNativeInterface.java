@@ -140,7 +140,12 @@ public class SerialNativeInterface {
             architecture = "arm" + floatStr;
         }
         
-        libFolderPath = libRootFolder + fileSeparator + ".jssc" + fileSeparator + osName;
+        String jsscLibPath = System.getProperty("jssc.library.path");
+        if (jsscLibPath != null) {
+            libFolderPath = jsscLibPath;
+        } else {
+            libFolderPath = libRootFolder + fileSeparator + ".jssc" + fileSeparator + osName;
+        }
         libName = "jSSC-" + libVersion + "_" + architecture;
         libName = System.mapLibraryName(libName);
 
