@@ -1,0 +1,10 @@
+apply plugin : "java"
+
+group 'org.jbaptperez.jssc'
+version '2.8.1-SNAPSHOT'
+
+jar {
+    into 'libs', {
+        from 'libs'
+    }
+}
