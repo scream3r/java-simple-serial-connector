@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <exception>
 #include <sstream>
+#include <iostream>
 
 #include "../jssc_SerialNativeInterface.h"
 #include "jssc_win.h"
@@ -42,25 +43,23 @@ JNIEXPORT jstring JNICALL Java_jssc_SerialNativeInterface_getNativeLibraryVersio
 * Port opening.
 *
 * In 2.2.0 added useTIOCEXCL (not used in Windows, only for compatibility with _nix version)
+* Usage of wstring added by Roman Belkov in post-2.8.0
 */
 JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jobject object, jstring portName, jboolean useTIOCEXCL) {
-	char prefix[] = "\\\\.\\";
-	const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
+	const std::wstring prefix = L"\\\\.\\";
+	//const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
+	const std::wstring port = jstr2wstr(env, portName);
 
-	//since 2.1.0 -> string concat fix
-	char *portFullName = new char[strlen(prefix) + strlen(port) + 1];
-	strcpy(portFullName, prefix);
-	strcat(portFullName, port);
-	//<- since 2.1.0
+	std::wstring portFullName = std::wstring(prefix);
+	portFullName += port;
 
-	HANDLE hComm = CreateFile(convertCharArrayToLPCWSTR(portFullName),
+	HANDLE hComm = CreateFile(portFullName.c_str(),
 		GENERIC_READ | GENERIC_WRITE,
 		0,
 		0,
 		OPEN_EXISTING,
 		FILE_FLAG_OVERLAPPED,
 		0);
-	env->ReleaseStringUTFChars(portName, port);
 
 	//since 2.3.0 ->
 	if (hComm != INVALID_HANDLE_VALUE) {
@@ -694,9 +693,25 @@ JNIEXPORT jintArray JNICALL Java_jssc_SerialNativeInterface_getLinesStatus
 	return returnArray;
 }
 
+/*
+* Gets properties of given port
+*
+* Returns a string array of port's properties
+*
+* ret[0] - product ID (in hex)
+* ret[1] - vendor ID (in hex)
+* ret[2] - manufacturer
+* ret[3] - description
+* ret[4] - serial number
+*
+* NOTE: parts of this code are based on Qt's serialport.
+* Since JSSC is already LGPL-licensed, this does not seem like a violation of LGPL rules
+*
+*/
+
 JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getPortProperties
 (JNIEnv *env, jclass cls, jstring portName) {
-	std::wstring wantedPortName = convertCharArrayToLPCWSTR((const char*)env->GetStringUTFChars(portName, NULL));
+	std::wstring wantedPortName = jstr2wstr(env, portName);
 	jclass stringClass = env->FindClass("Ljava/lang/String;");
 	int itemsCount = 5;
 	int retPos = 0;
@@ -726,7 +741,7 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getPortProperties
 
 		DWORD index = 0;
 		while (::SetupDiEnumDeviceInfo(deviceInfoSet, index++, &deviceInfoData)) {
-			const std::wstring devicePort = devicePortName(deviceInfoSet, &deviceInfoData);
+			const std::wstring devicePort = std::wstring(devicePortName(deviceInfoSet, &deviceInfoData).c_str());
 			if (devicePort.empty() || (devicePort.find(L"LPT") != std::string::npos) || devicePort.compare(wantedPortName) != 0)
 				continue;
 
@@ -738,7 +753,7 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getPortProperties
 			bool ok = false;
 			const uint16_t productIdentifier =
 				deviceProductIdentifier(instanceIdentifier, ok);
-			addWStringToJavaArray(env, ret, retPos, intToString(instanceIdentifier));
+			addWStringToJavaArray(env, ret, retPos, intToString(productIdentifier));
 			retPos++;
 
 			ok = false;
@@ -747,15 +762,15 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getPortProperties
 			addWStringToJavaArray(env, ret, retPos, intToString(vendorIdentifier));
 			retPos++;
 
-			const std::wstring manufacturer = deviceManufacturer(deviceInfoSet, &deviceInfoData);
+			const std::wstring manufacturer = trimAfterFirstNull(deviceManufacturer(deviceInfoSet, &deviceInfoData));
 			addWStringToJavaArray(env, ret, retPos, manufacturer);
 			retPos++;
 
-			const std::wstring description = deviceDescription(deviceInfoSet, &deviceInfoData);
+			const std::wstring description = trimAfterFirstNull(deviceDescription(deviceInfoSet, &deviceInfoData));
 			addWStringToJavaArray(env, ret, retPos, description);
 			retPos++;
 
-			const std::wstring serialNumber = deviceSerialNumber(instanceIdentifier, deviceInfoData.DevInst);
+			const std::wstring serialNumber = trimAfterFirstNull(deviceSerialNumber(instanceIdentifier, deviceInfoData.DevInst));
 			addWStringToJavaArray(env, ret, retPos, serialNumber);
 			retPos++;
 
@@ -765,6 +780,10 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getPortProperties
 	}
 	return ret;
 }
+
+/*
+* Functions below are helper methods. Mainly they are for getSerialPorts (as of 10.07.2017)
+*/
 
 static std::wstring deviceRegistryProperty(HDEVINFO deviceInfoSet,
 	PSP_DEVINFO_DATA deviceInfoData,
@@ -978,15 +997,31 @@ static jstring wstr2jstr(JNIEnv *env, std::wstring cstr) {
 	return result;
 }
 
-static wchar_t *convertCharArrayToLPCWSTR(const char* charArray) {
-	wchar_t* wString = new wchar_t[4096];
-	MultiByteToWideChar(CP_ACP, 0, charArray, -1, wString, 4096);
-	return wString;
+static std::wstring jstr2wstr(JNIEnv *env, jstring string)
+{
+	std::wstring value;
+
+	const jchar *raw = env->GetStringChars(string, 0);
+	jsize len = env->GetStringLength(string);
+
+	value.assign(raw, raw + len);
+
+	env->ReleaseStringChars(string, raw);
+
+	return value;
+}
+
+static std::wstring trimAfterFirstNull(std::wstring str) {
+	size_t index = str.find_first_of(L'\0');
+	if (index != std::string::npos) {
+		str.erase(index, str.length());
+	}
+	return str;
 }
 
 static void addWStringToJavaArray(JNIEnv *env, jobjectArray objArray, int pos, std::wstring str) {
 	jstring tmp = wstr2jstr(env, str);
-	env->SetObjectArrayElement(objArray, 0, tmp);
+	env->SetObjectArrayElement(objArray, pos, tmp);
 	env->DeleteLocalRef(tmp);
 }
 

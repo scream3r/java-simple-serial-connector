@@ -68,10 +68,11 @@ static bool anyOfPorts(const std::vector<std::wstring> &ports, const std::wstrin
 
 static std::wstring devicePortName(HDEVINFO deviceInfoSet, PSP_DEVINFO_DATA deviceInfoData);
 
-// std::wstring to jstring
 static jstring wstr2jstr(JNIEnv *env, std::wstring cstr);
 
-static wchar_t *convertCharArrayToLPCWSTR(const char* charArray);
+std::wstring jstr2wstr(JNIEnv *env, jstring string);
+
+static std::wstring trimAfterFirstNull(std::wstring str);
 
 static void addWStringToJavaArray(JNIEnv *env, jobjectArray objArray, int pos, std::wstring str);
 
