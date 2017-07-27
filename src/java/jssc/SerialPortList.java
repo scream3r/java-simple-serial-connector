@@ -385,6 +385,7 @@ public class SerialPortList {
                 for (String attribute : attributes) {
                     try {
                         Scanner in = new Scanner(new FileReader(curPath + attribute));
+                        in.useDelimiter(System.getProperty("line.separator"));
                         // we treat the values just as strings
                         props.put(attribute, in.next());
                     } catch (Exception e) {
