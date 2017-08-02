@@ -32,6 +32,8 @@
 #include "../jssc_SerialNativeInterface.h"
 #include "jssc_win.h"
 
+#include <devpkey.h>
+
 /*
 * Get native library version
 */
@@ -713,7 +715,7 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getPortProperties
 (JNIEnv *env, jclass cls, jstring portName) {
 	std::wstring wantedPortName = jstr2wstr(env, portName);
 	jclass stringClass = env->FindClass("Ljava/lang/String;");
-	int itemsCount = 5;
+	int itemsCount = 6;
 	int retPos = 0;
 	jobjectArray ret = env->NewObjectArray(itemsCount, stringClass, NULL);
 
@@ -770,6 +772,10 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getPortProperties
 			addWStringToJavaArray(env, ret, retPos, description);
 			retPos++;
 
+			const std::wstring busProvidedDesc = trimAfterFirstNull(busProvidedDescription(deviceInfoSet, &deviceInfoData));
+			addWStringToJavaArray(env, ret, retPos, busProvidedDesc);
+			retPos++;
+
 			const std::wstring serialNumber = trimAfterFirstNull(deviceSerialNumber(instanceIdentifier, deviceInfoData.DevInst));
 			addWStringToJavaArray(env, ret, retPos, serialNumber);
 			retPos++;
@@ -807,6 +813,29 @@ static std::wstring deviceRegistryProperty(HDEVINFO deviceInfoSet,
 	}
 	return std::wstring(outputBuffer.begin(), outputBuffer.end());
 }
+
+static std::wstring busProvidedDescription(HDEVINFO deviceInfoSet,
+	PSP_DEVINFO_DATA deviceInfoData)
+{
+	DWORD dataType = 0;
+	std::vector<wchar_t> outputBuffer(MAX_PATH + 1, 0);
+	DWORD bytesRequired = MAX_PATH;
+	for (;;) {
+		if (::SetupDiGetDeviceProperty(deviceInfoSet, deviceInfoData, &DEVPKEY_Device_BusReportedDeviceDesc, &dataType,
+			reinterpret_cast<PBYTE>(&outputBuffer[0]),
+			bytesRequired, &bytesRequired, 0)) {
+			break;
+		}
+
+		if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER
+			|| (dataType != REG_SZ && dataType != REG_EXPAND_SZ)) {
+			return NULL;
+		}
+		outputBuffer.resize(bytesRequired / sizeof(wchar_t) + 2, 0);
+	}
+	return std::wstring(outputBuffer.begin(), outputBuffer.end());
+}
+
 static std::wstring deviceDescription(HDEVINFO deviceInfoSet,
 	PSP_DEVINFO_DATA deviceInfoData) {
 	return deviceRegistryProperty(deviceInfoSet, deviceInfoData, SPDRP_DEVICEDESC);

@@ -407,8 +407,14 @@ public class SerialPortList {
     private static Map<String, String> getNativePortProperties(String portName) {
         Map<String, String> props = new HashMap<String, String>();
         try {
+            String[] names;
+            if (SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS) {
+                names = new String[] { "idProduct", "idVendor", "manufacturer", "product", "busProvidedProduct", "serial" };
+            } else {
+                names = new String[] { "idProduct", "idVendor", "manufacturer", "product", "serial" };
+            }
+
             // use JNI functions to read those properties
-            String[] names = { "idProduct", "idVendor", "manufacturer", "product", "serial" };
             String[] values = SerialNativeInterface.getPortProperties(portName);
 
             for (int i = 0; i < names.length; i++) {

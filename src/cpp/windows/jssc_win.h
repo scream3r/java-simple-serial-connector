@@ -44,6 +44,9 @@ static std::wstring deviceRegistryProperty(HDEVINFO deviceInfoSet,
 static std::wstring deviceDescription(HDEVINFO deviceInfoSet,
 	PSP_DEVINFO_DATA deviceInfoData);
 
+static std::wstring busProvidedDescription(HDEVINFO deviceInfoSet,
+	PSP_DEVINFO_DATA deviceInfoData);
+
 static std::wstring deviceManufacturer(HDEVINFO deviceInfoSet,
 	PSP_DEVINFO_DATA deviceInfoData);
 
