@@ -807,7 +807,7 @@ static std::wstring deviceRegistryProperty(HDEVINFO deviceInfoSet,
 
 		if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER
 			|| (dataType != REG_SZ && dataType != REG_EXPAND_SZ)) {
-			return NULL;
+			return std::wstring();
 		}
 		outputBuffer.resize(bytesRequired / sizeof(wchar_t) + 2, 0);
 	}
@@ -829,7 +829,7 @@ static std::wstring busProvidedDescription(HDEVINFO deviceInfoSet,
 
 		if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER
 			|| (dataType != REG_SZ && dataType != REG_EXPAND_SZ)) {
-			return NULL;
+			return std::wstring();
 		}
 		outputBuffer.resize(bytesRequired / sizeof(wchar_t) + 2, 0);
 	}
@@ -853,7 +853,7 @@ static std::wstring deviceInstanceIdentifier(DEVINST deviceInstanceNumber) {
 		&outputBuffer[0],
 		MAX_DEVICE_ID_LEN,
 		0) != CR_SUCCESS) {
-		return NULL;
+		return std::wstring();
 	}
 	return std::wstring(outputBuffer.begin(), outputBuffer.end());
 }
@@ -879,16 +879,16 @@ static std::wstring parseDeviceSerialNumber(const std::wstring &instanceIdentifi
 			lastbound = instanceIdentifier.size();
 		int ampersand = instanceIdentifier.find('&', firstbound);
 		if (ampersand != -1 && ampersand < lastbound)
-			return NULL;
+			return std::wstring();
 	}
 	else if (instanceIdentifier.find(L"FTDIBUS\\") == 0) {
 		firstbound = instanceIdentifier.rfind('+');
 		lastbound = instanceIdentifier.find('\\', firstbound);
 		if (lastbound == -1)
-			return NULL;
+			return std::wstring();
 	}
 	else {
-		return NULL;
+		return std::wstring();
 	}
 
 	return instanceIdentifier.substr(firstbound + 1, lastbound - firstbound - 1);
@@ -908,7 +908,7 @@ static std::wstring deviceSerialNumber(std::wstring instanceIdentifier,
 			break;
 	}
 
-	return NULL;
+	return std::wstring();
 }
 
 static uint16_t parseDeviceIdentifier(const std::wstring &instanceIdentifier,
@@ -967,7 +967,7 @@ static std::wstring devicePortName(HDEVINFO deviceInfoSet, PSP_DEVINFO_DATA devi
 	const HKEY key = ::SetupDiOpenDevRegKey(deviceInfoSet, deviceInfoData, DICS_FLAG_GLOBAL,
 		0, DIREG_DEV, KEY_READ);
 	if (key == INVALID_HANDLE_VALUE)
-		return NULL;
+		return std::wstring();
 
 	static const wchar_t * const keyTokens[] = {
 		L"PortName\0",
