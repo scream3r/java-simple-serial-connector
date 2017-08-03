@@ -150,7 +150,9 @@ public class SerialNativeInterface {
 
         boolean loadLib = false;
 
-        if(isLibFolderExist(libFolderPath)){
+        if(loadLibFromPath("jSSC-"+libVersion)) {
+            // nothing more to do
+        } else if(isLibFolderExist(libFolderPath)){
             if(isLibFileExist(libFolderPath + fileSeparator + libName)){
                 loadLib = true;
             }
@@ -302,6 +304,21 @@ public class SerialNativeInterface {
      * @since 2.8.0
      */
     public static native String getNativeLibraryVersion();
+
+    /**
+     *  Attempt to load a library using System.loadLibrary
+     *
+     *  @param lib name of the library
+     *  @return true if sucessful, false if not
+     */
+    public static boolean loadLibFromPath(String lib) {
+        try {
+            System.loadLibrary(lib);
+            return true;
+        } catch (UnsatisfiedLinkError e) {
+            return false;
+        }
+    }
 
     /**
      * Open port
@@ -483,4 +500,6 @@ public class SerialNativeInterface {
      * @since 0.8
      */
     public native boolean sendBreak(long handle, int duration);
+
+    public static native String[] getPortProperties(String portName);
 }
