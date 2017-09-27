@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2011.
+ * © Alexey Sokolov (scream3r), 2010-2014.
  *
  * This file is part of jSSC.
  *
@@ -24,14 +24,10 @@
  */
 package jssc;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -40,153 +36,311 @@ import java.util.TreeSet;
 public class SerialPortList {
 
     private static SerialNativeInterface serialInterface;
-    private static Comparator<String> comparator = new Comparator<String>() {
-        @Override
-        public int compare(String valueA, String valueB) {
-            int result = 0;
-            if(valueA.toLowerCase().contains("com") && valueB.toLowerCase().contains("com")){
-                try {
-                    int index1 = Integer.valueOf(valueA.toLowerCase().replace("com", ""));
-                    int index2 = Integer.valueOf(valueB.toLowerCase().replace("com", ""));
-                    result = index1 - index2;
-                }
-                catch (Exception ex) {
-                    result = valueA.compareToIgnoreCase(valueB);
-                }
-            } 
-            else {
-                result = valueA.compareToIgnoreCase(valueB);
-            }
-            return result;
-        }
-    };
+    private static final Pattern PORTNAMES_REGEXP;
+    private static final String PORTNAMES_PATH;
 
     static {
         serialInterface = new SerialNativeInterface();
+        switch (SerialNativeInterface.getOsType()) {
+            case SerialNativeInterface.OS_LINUX: {
+                PORTNAMES_REGEXP = Pattern.compile("(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO)[0-9]{1,3}");
+                PORTNAMES_PATH = "/dev/";
+                break;
+            }
+            case SerialNativeInterface.OS_SOLARIS: {
+                PORTNAMES_REGEXP = Pattern.compile("[0-9]*|[a-z]*");
+                PORTNAMES_PATH = "/dev/term/";
+                break;
+            }
+            case SerialNativeInterface.OS_MAC_OS_X: {
+                PORTNAMES_REGEXP = Pattern.compile("tty.(serial|usbserial|usbmodem).*");
+                PORTNAMES_PATH = "/dev/";
+                break;
+            }
+            case SerialNativeInterface.OS_WINDOWS: {
+                PORTNAMES_REGEXP = Pattern.compile("");
+                PORTNAMES_PATH = "";
+                break;
+            }
+            default: {
+                PORTNAMES_REGEXP = null;
+                PORTNAMES_PATH = null;
+                break;
+            }
+        }
     }
 
+    //since 2.1.0 -> Fully rewrited port name comparator
+    private static final Comparator<String> PORTNAMES_COMPARATOR = new Comparator<String>() {
+
+        @Override
+        public int compare(String valueA, String valueB) {
+
+            if(valueA.equalsIgnoreCase(valueB)){
+                return valueA.compareTo(valueB);
+            }
+
+            int minLength = Math.min(valueA.length(), valueB.length());
+
+            int shiftA = 0;
+            int shiftB = 0;
+
+            for(int i = 0; i < minLength; i++){
+                char charA = valueA.charAt(i - shiftA);
+                char charB = valueB.charAt(i - shiftB);
+                if(charA != charB){
+                    if(Character.isDigit(charA) && Character.isDigit(charB)){
+                        int[] resultsA = getNumberAndLastIndex(valueA, i - shiftA);
+                        int[] resultsB = getNumberAndLastIndex(valueB, i - shiftB);
+
+                        if(resultsA[0] != resultsB[0]){
+                            return resultsA[0] - resultsB[0];
+                        }
+
+                        if(valueA.length() < valueB.length()){
+                            i = resultsA[1];
+                            shiftB = resultsA[1] - resultsB[1];
+                        }
+                        else {
+                            i = resultsB[1];
+                            shiftA = resultsB[1] - resultsA[1];
+                        }
+                    }
+                    else {
+                        if(Character.toLowerCase(charA) - Character.toLowerCase(charB) != 0){
+                            return Character.toLowerCase(charA) - Character.toLowerCase(charB);
+                        }
+                    }
+                }
+            }
+            return valueA.compareToIgnoreCase(valueB);
+        }
+
+        /**
+         * Evaluate port <b>index/number</b> from <b>startIndex</b> to the number end. For example:
+         * for port name <b>serial-123-FF</b> you should invoke this method with <b>startIndex = 7</b>
+         *
+         * @return If port <b>index/number</b> correctly evaluated it value will be returned<br>
+         * <b>returnArray[0] = index/number</b><br>
+         * <b>returnArray[1] = stopIndex</b><br>
+         *
+         * If incorrect:<br>
+         * <b>returnArray[0] = -1</b><br>
+         * <b>returnArray[1] = startIndex</b><br>
+         *
+         * For this name <b>serial-123-FF</b> result is:
+         * <b>returnArray[0] = 123</b><br>
+         * <b>returnArray[1] = 10</b><br>
+         */
+        private int[] getNumberAndLastIndex(String str, int startIndex) {
+            String numberValue = "";
+            int[] returnValues = {-1, startIndex};
+            for(int i = startIndex; i < str.length(); i++){
+                returnValues[1] = i;
+                char c = str.charAt(i);
+                if(Character.isDigit(c)){
+                    numberValue += c;
+                }
+                else {
+                    break;
+                }
+            }
+            try {
+                returnValues[0] = Integer.valueOf(numberValue);
+            }
+            catch (Exception ex) {
+                //Do nothing
+            }
+            return returnValues;
+        }
+    };
+    //<-since 2.1.0
+    
     /**
-     * Get sorted array of serial ports in the system
+     * Get sorted array of serial ports in the system using default settings:<br>
+     *
+     * <b>Search path</b><br>
+     * Windows - ""(always ignored)<br>
+     * Linux - "/dev/"<br>
+     * Solaris - "/dev/term/"<br>
+     * MacOSX - "/dev/"<br>
+     *
+     * <b>RegExp</b><br>
+     * Windows - ""<br>
+     * Linux - "(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm)[0-9]{1,3}"<br>
+     * Solaris - "[0-9]*|[a-z]*"<br>
+     * MacOSX - "tty.(serial|usbserial|usbmodem).*"<br>
      *
      * @return String array. If there is no ports in the system String[]
      * with <b>zero</b> length will be returned (since jSSC-0.8 in previous versions null will be returned)
      */
     public static String[] getPortNames() {
-        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_LINUX){
-            return getLinuxPortNames();
+        return getPortNames(PORTNAMES_PATH, PORTNAMES_REGEXP, PORTNAMES_COMPARATOR);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system located on searchPath
+     *
+     * @param searchPath Path for searching serial ports <b>(not null)</b><br>
+     * The default search paths:<br>
+     * Linux, MacOSX: <b>/dev/</b><br>
+     * Solaris: <b>/dev/term/</b><br>
+     * Windows: <b>this parameter ingored</b>
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(String searchPath) {
+        return getPortNames(searchPath, PORTNAMES_REGEXP, PORTNAMES_COMPARATOR);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system matched pattern
+     *
+     * @param pattern RegExp pattern for matching port names <b>(not null)</b>
+     * 
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(Pattern pattern) {
+        return getPortNames(PORTNAMES_PATH, pattern, PORTNAMES_COMPARATOR);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system matched pattern
+     *
+     * @param comparator Comparator for sotring port names <b>(not null)</b>
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(Comparator<String> comparator) {
+        return getPortNames(PORTNAMES_PATH, PORTNAMES_REGEXP, comparator);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system located on searchPath, matched pattern
+     *
+     * @param searchPath Path for searching serial ports <b>(not null)</b><br>
+     * The default search paths:<br>
+     * Linux, MacOSX: <b>/dev/</b><br>
+     * Solaris: <b>/dev/term/</b><br>
+     * Windows: <b>this parameter ingored</b>
+     * @param pattern RegExp pattern for matching port names <b>(not null)</b>
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(String searchPath, Pattern pattern) {
+        return getPortNames(searchPath, pattern, PORTNAMES_COMPARATOR);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system located on searchPath and sorted by comparator
+     *
+     * @param searchPath Path for searching serial ports <b>(not null)</b><br>
+     * The default search paths:<br>
+     * Linux, MacOSX: <b>/dev/</b><br>
+     * Solaris: <b>/dev/term/</b><br>
+     * Windows: <b>this parameter ingored</b>
+     * @param comparator Comparator for sotring port names <b>(not null)</b>
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(String searchPath, Comparator<String> comparator) {
+        return getPortNames(searchPath, PORTNAMES_REGEXP, comparator);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system matched pattern and sorted by comparator
+     *
+     * @param pattern RegExp pattern for matching port names <b>(not null)</b>
+     * @param comparator Comparator for sotring port names <b>(not null)</b>
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(Pattern pattern, Comparator<String> comparator) {
+        return getPortNames(PORTNAMES_PATH, pattern, comparator);
+    }
+
+    /**
+     * Get sorted array of serial ports in the system located on searchPath, matched pattern and sorted by comparator
+     *
+     * @param searchPath Path for searching serial ports <b>(not null)</b><br>
+     * The default search paths:<br>
+     * Linux, MacOSX: <b>/dev/</b><br>
+     * Solaris: <b>/dev/term/</b><br>
+     * Windows: <b>this parameter ingored</b>
+     * @param pattern RegExp pattern for matching port names <b>(not null)</b>
+     * @param comparator Comparator for sotring port names <b>(not null)</b>
+     *
+     * @return String array. If there is no ports in the system String[]
+     *
+     * @since 2.3.0
+     */
+    public static String[] getPortNames(String searchPath, Pattern pattern, Comparator<String> comparator) {
+        if(searchPath == null || pattern == null || comparator == null){
+            return new String[]{};
         }
-        else if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_SOLARIS){//since 0.9.0 ->
-            return getSolarisPortNames();
+        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS){
+            return getWindowsPortNames(pattern, comparator);
         }
-        else if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_MAC_OS_X){
-            return getMacOSXPortNames();
-        }//<-since 0.9.0
+        return getUnixBasedPortNames(searchPath, pattern, comparator);
+    }
+
+    /**
+     * Get serial port names in Windows
+     *
+     * @since 2.3.0
+     */
+    private static String[] getWindowsPortNames(Pattern pattern, Comparator<String> comparator) {
         String[] portNames = serialInterface.getSerialPortNames();
         if(portNames == null){
             return new String[]{};
         }
         TreeSet<String> ports = new TreeSet<String>(comparator);
-        ports.addAll(Arrays.asList(portNames));
+        for(String portName : portNames){
+            if(pattern.matcher(portName).find()){
+                ports.add(portName);
+            }
+        }
         return ports.toArray(new String[ports.size()]);
     }
 
     /**
-     * Get serial port names in Linux OS (This method was completely rewrited in 0.8-tb4)
-     * 
-     * @return
+     * Universal method for getting port names of _nix based systems
      */
-    private static String[] getLinuxPortNames() {
+    private static String[] getUnixBasedPortNames(String searchPath, Pattern pattern, Comparator<String> comparator) {
+        searchPath = (searchPath.equals("") ? searchPath : (searchPath.endsWith("/") ? searchPath : searchPath + "/"));
         String[] returnArray = new String[]{};
-        try {
-            Process dmesgProcess =  Runtime.getRuntime().exec("dmesg");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(dmesgProcess.getInputStream()));
-            TreeSet<String> portsTree = new TreeSet<String>();
-            ArrayList<String> portsList = new ArrayList<String>();
-            String buffer = "";
-            while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
-                if(buffer.matches(".*(ttyS|ttyUSB)[0-9]{1,3}.*")){
-                    String[] tmp = buffer.split(" ");
-                    for(String value : tmp){
-                        if(value.matches("(ttyS|ttyUSB)[0-9]{1,3}")){
-                            portsTree.add("/dev/" + value);
+        File dir = new File(searchPath);
+        if(dir.exists() && dir.isDirectory()){
+            File[] files = dir.listFiles();
+            if(files.length > 0){
+                TreeSet<String> portsTree = new TreeSet<String>(comparator);
+                for(File file : files){
+                    String fileName = file.getName();
+                    if(!file.isDirectory() && !file.isFile() && pattern.matcher(fileName).find()){
+                        String portName = searchPath + fileName;
+                        long portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
+                        if(portHandle < 0 && portHandle != SerialNativeInterface.ERR_PORT_BUSY){
+                            continue;
                         }
+                        else if(portHandle != SerialNativeInterface.ERR_PORT_BUSY) {
+                            serialInterface.closePort(portHandle);
+                        }
+                        portsTree.add(portName);
                     }
                 }
-            }
-            for(String portName : portsTree){
-                SerialPort serialPort = new SerialPort(portName);
-                try {
-                    if(serialPort.openPort()){
-                        portsList.add(portName);
-                        serialPort.closePort();
-                    }
-                }
-                catch (SerialPortException ex) {
-                    //since 0.9.0 ->
-                    if(ex.getExceptionType().equals(SerialPortException.TYPE_PORT_BUSY)){
-                        portsList.add(portName);
-                    }
-                    //<- since 0.9.0
-                }
-            }
-            returnArray = portsList.toArray(returnArray);
-            reader.close();
-        }
-        catch (IOException ex) {
-            //Do nothing
-        }
-        return returnArray;
-    }
-
-    /**
-     * Get serial port names in Solaris OS
-     *
-     * @since 0.9.0
-     */
-    private static String[] getSolarisPortNames() {
-        String[] returnArray = new String[]{};
-        File dir = new File("/dev/term");
-        if(dir.exists() && dir.isDirectory()){
-            File[] files = dir.listFiles();
-            if(files.length > 0){
-                TreeSet<String> portsTree = new TreeSet<String>();
-                ArrayList<String> portsList = new ArrayList<String>();
-                for(File file : files){
-                    if(!file.isDirectory() && !file.isFile() && file.getName().matches("[0-9]*|[a-z]*")){
-                        portsTree.add("/dev/term/" + file.getName());
-                    }
-                }
-                for(String portName : portsTree){
-                    portsList.add(portName);
-                }
-                returnArray = portsList.toArray(returnArray);
-            }
-        }
-        return returnArray;
-    }
-
-    /**
-     * Get serial port names in Mac OS X
-     *
-     * @since 0.9.0
-     */
-    private static String[] getMacOSXPortNames() {
-        String[] returnArray = new String[]{};
-        File dir = new File("/dev");
-        if(dir.exists() && dir.isDirectory()){
-            File[] files = dir.listFiles();
-            if(files.length > 0){
-                TreeSet<String> portsTree = new TreeSet<String>();
-                ArrayList<String> portsList = new ArrayList<String>();
-                for(File file : files){
-                    if(!file.isDirectory() && !file.isFile() && file.getName().matches("tty.(serial.*|usbserial.*)")){
-                        portsTree.add("/dev/" + file.getName());
-                    }
-                }
-                for(String portName : portsTree){
-                    portsList.add(portName);
-                }
-                returnArray = portsList.toArray(returnArray);
+                returnArray = portsTree.toArray(returnArray);
             }
         }
         return returnArray;

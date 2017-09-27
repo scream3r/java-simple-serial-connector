@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2011.
+ * © Alexey Sokolov (scream3r), 2010-2014.
  *
  * This file is part of jSSC.
  *
@@ -52,6 +52,14 @@ public class SerialPortException extends Exception {
      * @since 0.9.0
      */
     final public static String TYPE_PORT_NOT_FOUND = "Port not found";
+    /**
+     * @since 2.2.0
+     */
+    final public static String TYPE_PERMISSION_DENIED = "Permission denied";
+    /**
+     * @since 2.3.0
+     */
+    final public static String TYPE_INCORRECT_SERIAL_PORT = "Incorrect serial port";
 
     private String portName;
     private String methodName;

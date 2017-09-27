@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2011.
+ * Â© Alexey Sokolov (scream3r), 2010-2014.
  *
  * This file is part of jSSC.
  *
@@ -31,6 +31,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#undef jSSC_NATIVE_LIB_VERSION
+#define jSSC_NATIVE_LIB_VERSION "2.8"
+
 #undef jssc_SerialNativeInterface_OS_LINUX
 #define jssc_SerialNativeInterface_OS_LINUX 0L
 #undef jssc_SerialNativeInterface_OS_WINDOWS
@@ -39,117 +43,133 @@ extern "C" {
 #define jssc_SerialNativeInterface_OS_SOLARIS 2L
 #undef jssc_SerialNativeInterface_OS_MAC_OS_X
 #define jssc_SerialNativeInterface_OS_MAC_OS_X 3L
+#undef jssc_SerialNativeInterface_ERR_PORT_BUSY
+#define jssc_SerialNativeInterface_ERR_PORT_BUSY -1LL
+#undef jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND
+#define jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND -2LL
+#undef jssc_SerialNativeInterface_ERR_PERMISSION_DENIED
+#define jssc_SerialNativeInterface_ERR_PERMISSION_DENIED -3LL
+#undef jssc_SerialNativeInterface_ERR_INCORRECT_SERIAL_PORT
+#define jssc_SerialNativeInterface_ERR_INCORRECT_SERIAL_PORT -4LL
+/*
+ * Class:     jssc_SerialNativeInterface
+ * Method:    getNativeLibraryVersion
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_jssc_SerialNativeInterface_getNativeLibraryVersion
+  (JNIEnv *, jobject);
+
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    openPort
- * Signature: (Ljava/lang/String;)I
+ * Signature: (Ljava/lang/String;Z)J
  */
-JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_openPort
-  (JNIEnv *, jobject, jstring);
+JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort
+  (JNIEnv *, jobject, jstring, jboolean);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    setParams
- * Signature: (IIIIIZZ)Z
+ * Signature: (JIIIIZZI)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
-  (JNIEnv *, jobject, jint, jint, jint, jint, jint, jboolean, jboolean);
+  (JNIEnv *, jobject, jlong, jint, jint, jint, jint, jboolean, jboolean, jint);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    purgePort
- * Signature: (II)Z
+ * Signature: (JI)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_purgePort
-  (JNIEnv *, jobject, jint, jint);
+  (JNIEnv *, jobject, jlong, jint);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    closePort
- * Signature: (I)Z
+ * Signature: (J)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_closePort
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    setEventsMask
- * Signature: (II)Z
+ * Signature: (JI)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setEventsMask
-  (JNIEnv *, jobject, jint, jint);
+  (JNIEnv *, jobject, jlong, jint);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    getEventsMask
- * Signature: (I)I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getEventsMask
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    waitEvents
- * Signature: (I)[[I
+ * Signature: (J)[[I
  */
 JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    setRTS
- * Signature: (IZ)Z
+ * Signature: (JZ)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setRTS
-  (JNIEnv *, jobject, jint, jboolean);
+  (JNIEnv *, jobject, jlong, jboolean);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    setDTR
- * Signature: (IZ)Z
+ * Signature: (JZ)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setDTR
-  (JNIEnv *, jobject, jint, jboolean);
+  (JNIEnv *, jobject, jlong, jboolean);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    readBytes
- * Signature: (II)[B
+ * Signature: (JI)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
-  (JNIEnv *, jobject, jint, jint);
+  (JNIEnv *, jobject, jlong, jint);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    writeBytes
- * Signature: (I[B)Z
+ * Signature: (J[B)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
-  (JNIEnv *, jobject, jint, jbyteArray);
+  (JNIEnv *, jobject, jlong, jbyteArray);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    getBuffersBytesCount
- * Signature: (I)[I
+ * Signature: (J)[I
  */
 JNIEXPORT jintArray JNICALL Java_jssc_SerialNativeInterface_getBuffersBytesCount
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    setFlowControlMode
- * Signature: (II)Z
+ * Signature: (JI)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setFlowControlMode
-  (JNIEnv *, jobject, jint, jint);
+  (JNIEnv *, jobject, jlong, jint);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    getFlowControlMode
- * Signature: (I)I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getFlowControlMode
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     jssc_SerialNativeInterface
@@ -162,18 +182,18 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_getSerialPortName
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    getLinesStatus
- * Signature: (I)[I
+ * Signature: (J)[I
  */
 JNIEXPORT jintArray JNICALL Java_jssc_SerialNativeInterface_getLinesStatus
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     jssc_SerialNativeInterface
  * Method:    sendBreak
- * Signature: (II)Z
+ * Signature: (JI)Z
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_sendBreak
-  (JNIEnv *, jobject, jint, jint);
+  (JNIEnv *, jobject, jlong, jint);
 
 #ifdef __cplusplus
 }

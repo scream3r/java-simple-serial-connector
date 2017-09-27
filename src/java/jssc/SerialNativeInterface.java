@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2011.
+ * © Alexey Sokolov (scream3r), 2010-2014.
  *
  * This file is part of jSSC.
  *
@@ -24,9 +24,11 @@
  */
 package jssc;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  *
@@ -34,7 +36,7 @@ import java.io.InputStream;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "0.9"; //jSSC-0.9.0 Release from 21.12.2011
+    private static final String libVersion = "2.8"; //jSSC-2.8.0 Release from 24.01.2014
     private static final String libMinorSuffix = "0"; //since 0.9.0
 
     public static final int OS_LINUX = 0;
@@ -44,6 +46,36 @@ public class SerialNativeInterface {
 
     private static int osType = -1;
 
+    /**
+     * @since 2.3.0
+     */
+    public static final long ERR_PORT_BUSY = -1;
+    /**
+     * @since 2.3.0
+     */
+    public static final long ERR_PORT_NOT_FOUND = -2;
+    /**
+     * @since 2.3.0
+     */
+    public static final long ERR_PERMISSION_DENIED = -3;
+    /**
+     * @since 2.3.0
+     */
+    public static final long ERR_INCORRECT_SERIAL_PORT = -4;
+
+    /**
+     * @since 2.6.0
+     */
+    public static final String PROPERTY_JSSC_NO_TIOCEXCL = "JSSC_NO_TIOCEXCL";
+    /**
+     * @since 2.6.0
+     */
+    public static final String PROPERTY_JSSC_IGNPAR = "JSSC_IGNPAR";
+    /**
+     * @since 2.6.0
+     */
+    public static final String PROPERTY_JSSC_PARMRK = "JSSC_PARMRK";
+
     static {
         String libFolderPath;
         String libName;
@@ -52,6 +84,13 @@ public class SerialNativeInterface {
         String architecture = System.getProperty("os.arch");
         String userHome = System.getProperty("user.home");
         String fileSeparator = System.getProperty("file.separator");
+        String tmpFolder = System.getProperty("java.io.tmpdir");
+
+        //since 2.3.0 ->
+        String libRootFolder = new File(userHome).canWrite() ? userHome : tmpFolder;
+        //<- since 2.3.0
+
+        String javaLibPath = System.getProperty("java.library.path");//since 2.1.0
 
         if(osName.equals("Linux")){
             osName = "linux";
@@ -65,7 +104,7 @@ public class SerialNativeInterface {
             osName = "solaris";
             osType = OS_SOLARIS;
         }
-        else if(osName.equals("Mac OS X")){
+        else if(osName.equals("Mac OS X") || osName.equals("Darwin")){//os.name "Darwin" since 2.6.0
             osName = "mac_os_x";
             osType = OS_MAC_OS_X;
         }//<- since 0.9.0
@@ -73,13 +112,41 @@ public class SerialNativeInterface {
         if(architecture.equals("i386") || architecture.equals("i686")){
             architecture = "x86";
         }
-        else if(architecture.equals("amd64")){
+        else if(architecture.equals("amd64") || architecture.equals("universal")){//os.arch "universal" since 2.6.0
             architecture = "x86_64";
         }
+        else if(architecture.equals("arm")) {//since 2.1.0
+            String floatStr = "sf";
+            if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
+                floatStr = "hf";
+            }
+            else {
+                try {
+                    Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
+                    String buffer = "";
+                    while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
+                        if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
+                            floatStr = "hf";
+                            break;
+                        }
+                    }
+                    reader.close();
+                }
+                catch (Exception ex) {
+                    //Do nothing
+                }
+            }
+            architecture = "arm" + floatStr;
+        }
         
-        libFolderPath = userHome + fileSeparator + ".jssc" + fileSeparator + osName;
+        libFolderPath = libRootFolder + fileSeparator + ".jssc" + fileSeparator + osName;
         libName = "jSSC-" + libVersion + "_" + architecture;
         libName = System.mapLibraryName(libName);
+
+        if(libName.endsWith(".dylib")){//Since 2.1.0 MacOSX 10.8 fix
+            libName = libName.replace(".dylib", ".jnilib");
+        }
 
         boolean loadLib = false;
 
@@ -101,8 +168,13 @@ public class SerialNativeInterface {
             }
         }
 
-        if(loadLib){
+        if (loadLib) {
             System.load(libFolderPath + fileSeparator + libName);
+            String versionBase = getLibraryBaseVersion();
+            String versionNative = getNativeLibraryVersion();
+            if (!versionBase.equals(versionNative)) {
+                System.err.println("Warning! jSSC Java and Native versions mismatch (Java: " + versionBase + ", Native: " + versionNative + ")");
+            }
         }
     }
 
@@ -223,13 +295,23 @@ public class SerialNativeInterface {
     }
 
     /**
+     * Get jSSC native library version
+     *
+     * @return native lib version (for jSSC-2.8.0 should be 2.8 for example)
+     *
+     * @since 2.8.0
+     */
+    public static native String getNativeLibraryVersion();
+
+    /**
      * Open port
      *
      * @param portName name of port for opening
+     * @param useTIOCEXCL enable/disable using of <b>TIOCEXCL</b>. Take effect only on *nix based systems
      * 
      * @return handle of opened port or -1 if opening of the port was unsuccessful
      */
-    public native int openPort(String portName);
+    public native long openPort(String portName, boolean useTIOCEXCL);
 
     /**
      * Setting the parameters of opened port
@@ -241,10 +323,11 @@ public class SerialNativeInterface {
      * @param parity parity
      * @param setRTS initial state of RTS line (ON/OFF)
      * @param setDTR initial state of DTR line (ON/OFF)
+     * @param flags additional Native settings. Take effect only on *nix based systems
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean setParams(int handle, int baudRate, int dataBits, int stopBits, int parity, boolean setRTS, boolean setDTR);
+    public native boolean setParams(long handle, int baudRate, int dataBits, int stopBits, int parity, boolean setRTS, boolean setDTR, int flags);
 
     /**
      * Purge of input and output buffer
@@ -254,7 +337,7 @@ public class SerialNativeInterface {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean purgePort(int handle, int flags);
+    public native boolean purgePort(long handle, int flags);
 
     /**
      * Close port
@@ -263,7 +346,7 @@ public class SerialNativeInterface {
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean closePort(int handle);
+    public native boolean closePort(long handle);
 
     /**
      * Set events mask
@@ -273,7 +356,7 @@ public class SerialNativeInterface {
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean setEventsMask(int handle, int mask);
+    public native boolean setEventsMask(long handle, int mask);
 
     /**
      * Get events mask
@@ -282,7 +365,7 @@ public class SerialNativeInterface {
      * 
      * @return Method returns event mask as a variable of <b>int</b> type
      */
-    public native int getEventsMask(int handle);
+    public native int getEventsMask(long handle);
 
     /**
      * Wait events
@@ -292,7 +375,7 @@ public class SerialNativeInterface {
      * @return Method returns two-dimensional array containing event types and their values
      * (<b>events[i][0] - event type</b>, <b>events[i][1] - event value</b>).
      */
-    public native int[][] waitEvents(int handle);
+    public native int[][] waitEvents(long handle);
 
     /**
      * Change RTS line state
@@ -302,7 +385,7 @@ public class SerialNativeInterface {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean setRTS(int handle, boolean value);
+    public native boolean setRTS(long handle, boolean value);
 
     /**
      * Change DTR line state
@@ -312,7 +395,7 @@ public class SerialNativeInterface {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean setDTR(int handle, boolean value);
+    public native boolean setDTR(long handle, boolean value);
 
     /**
      * Read data from port
@@ -322,7 +405,7 @@ public class SerialNativeInterface {
      * 
      * @return Method returns the array of read bytes
      */
-    public native byte[] readBytes(int handle, int byteCount);
+    public native byte[] readBytes(long handle, int byteCount);
 
     /**
      * Write data to port
@@ -332,7 +415,7 @@ public class SerialNativeInterface {
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean writeBytes(int handle, byte[] buffer);
+    public native boolean writeBytes(long handle, byte[] buffer);
 
     /**
      * Get bytes count in buffers of port
@@ -345,7 +428,7 @@ public class SerialNativeInterface {
      *
      * @since 0.8
      */
-    public native int[] getBuffersBytesCount(int handle);
+    public native int[] getBuffersBytesCount(long handle);
 
     /**
      * Set flow control mode
@@ -357,7 +440,7 @@ public class SerialNativeInterface {
      *
      * @since 0.8
      */
-    public native boolean setFlowControlMode(int handle, int mask);
+    public native boolean setFlowControlMode(long handle, int mask);
 
     /**
      * Get flow control mode
@@ -368,7 +451,7 @@ public class SerialNativeInterface {
      *
      * @since 0.8
      */
-    public native int getFlowControlMode(int handle);
+    public native int getFlowControlMode(long handle);
 
     /**
      * Get serial port names like an array of String
@@ -388,7 +471,7 @@ public class SerialNativeInterface {
      * <br><b>element 2</b> - <b>RING</b> line state</br>
      * <br><b>element 3</b> - <b>RLSD</b> line state</br>
      */
-    public native int[] getLinesStatus(int handle);
+    public native int[] getLinesStatus(long handle);
 
     /**
      * Send Break singnal for setted duration
@@ -399,5 +482,5 @@ public class SerialNativeInterface {
      *
      * @since 0.8
      */
-    public native boolean sendBreak(int handle, int duration);
+    public native boolean sendBreak(long handle, int duration);
 }

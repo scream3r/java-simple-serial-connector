@@ -1,5 +1,5 @@
 /* jSSC (Java Simple Serial Connector) - serial port communication library.
- * © Alexey Sokolov (scream3r), 2010-2011.
+ * © Alexey Sokolov (scream3r), 2010-2014.
  *
  * This file is part of jSSC.
  *
@@ -24,6 +24,10 @@
  */
 package jssc;
 
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+
 /**
  *
  * @author scream3r
@@ -32,13 +36,16 @@ public class SerialPort {
 
     private SerialNativeInterface serialInterface;
     private SerialPortEventListener eventListener;
-    private int portHandle;
+    private long portHandle;
     private String portName;
     private boolean portOpened = false;
     private boolean maskAssigned = false;
     private boolean eventListenerAdded = false;
-    
 
+    //since 2.2.0 ->
+    private Method methodErrorOccurred = null;
+    //<- since 2.2.0
+    
     public static final int BAUDRATE_110 = 110;
     public static final int BAUDRATE_300 = 300;
     public static final int BAUDRATE_600 = 600;
@@ -103,6 +110,11 @@ public class SerialPort {
     public static final int ERROR_PARITY = 0x0004;
     //<- since 0.8
 
+    //since 2.6.0 ->
+    private static final int PARAMS_FLAG_IGNPAR = 1;
+    private static final int PARAMS_FLAG_PARMRK = 2;
+    //<- since 2.6.0
+
     public SerialPort(String portName) {
         this.portName = portName;
         serialInterface = new SerialNativeInterface();
@@ -140,15 +152,26 @@ public class SerialPort {
         if(portOpened){
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_ALREADY_OPENED);
         }
-        portHandle = serialInterface.openPort(portName);
-        //since 0.9.0 ->
-        if(portHandle == -1){
+        if(portName != null){
+            boolean useTIOCEXCL = (System.getProperty(SerialNativeInterface.PROPERTY_JSSC_NO_TIOCEXCL) == null &&
+                                   System.getProperty(SerialNativeInterface.PROPERTY_JSSC_NO_TIOCEXCL.toLowerCase()) == null);
+            portHandle = serialInterface.openPort(portName, useTIOCEXCL);//since 2.3.0 -> (if JSSC_NO_TIOCEXCL defined, exclusive lock for serial port will be disabled)
+        }
+        else {
+            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
+        }
+        if(portHandle == SerialNativeInterface.ERR_PORT_BUSY){
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_BUSY);
         }
-        else if(portHandle == -2){
+        else if(portHandle == SerialNativeInterface.ERR_PORT_NOT_FOUND){
             throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_NOT_FOUND);
         }
-        //<- since 0.9.0
+        else if(portHandle == SerialNativeInterface.ERR_PERMISSION_DENIED){
+            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PERMISSION_DENIED);
+        }
+        else if(portHandle == SerialNativeInterface.ERR_INCORRECT_SERIAL_PORT){
+            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_INCORRECT_SERIAL_PORT);
+        }
         portOpened = true;
         return true;
     }
@@ -166,14 +189,7 @@ public class SerialPort {
      * @throws SerialPortException
      */
     public boolean setParams(int baudRate, int dataBits, int stopBits, int parity) throws SerialPortException {
-        checkPortOpened("setParams()");
-        if(stopBits == 1){
-            stopBits = 0;
-        }
-        else if(stopBits == 3){
-            stopBits = 1;
-        }
-        return serialInterface.setParams(portHandle, baudRate, dataBits, stopBits, parity, true, true);
+        return setParams(baudRate, dataBits, stopBits, parity, true, true);
     }
 
     /**
@@ -200,7 +216,14 @@ public class SerialPort {
         else if(stopBits == 3){
             stopBits = 1;
         }
-        return serialInterface.setParams(portHandle, baudRate, dataBits, stopBits, parity, setRTS, setDTR);
+        int flags = 0;
+        if(System.getProperty(SerialNativeInterface.PROPERTY_JSSC_IGNPAR) != null || System.getProperty(SerialNativeInterface.PROPERTY_JSSC_IGNPAR.toLowerCase()) != null){
+            flags |= PARAMS_FLAG_IGNPAR;
+        }
+        if(System.getProperty(SerialNativeInterface.PROPERTY_JSSC_PARMRK) != null || System.getProperty(SerialNativeInterface.PROPERTY_JSSC_PARMRK.toLowerCase()) != null){
+            flags |= PARAMS_FLAG_PARMRK;
+        }
+        return serialInterface.setParams(portHandle, baudRate, dataBits, stopBits, parity, setRTS, setDTR, flags);
     }
 
     /**
@@ -355,6 +378,20 @@ public class SerialPort {
     }
 
     /**
+     * Write String to port
+     *
+     * @return If the operation is successfully completed, the method returns true, otherwise false
+     *
+     * @throws SerialPortException
+     *
+     * @since 2.8.0
+     */
+    public boolean writeString(String string, String charsetName) throws SerialPortException, UnsupportedEncodingException {
+        checkPortOpened("writeString()");
+        return writeBytes(string.getBytes(charsetName));
+    }
+
+    /**
      * Write int value (in range from 0 to 255 (0x00 - 0xFF)) to port
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
@@ -417,7 +454,7 @@ public class SerialPort {
     }
 
     /**
-     * Read Hex string from port (example: FF OA FF). Separator by default is a space
+     * Read Hex string from port (example: FF 0A FF). Separator by default is a space
      *
      * @param byteCount count of bytes for reading
      *
@@ -433,7 +470,7 @@ public class SerialPort {
     }
 
     /**
-     * Read Hex string from port with setted separator (example if separator is "::": FF::OA::FF)
+     * Read Hex string from port with setted separator (example if separator is "::": FF::0A::FF)
      *
      * @param byteCount count of bytes for reading
      *
@@ -507,6 +544,141 @@ public class SerialPort {
             }
         }
         return intBuffer;
+    }
+
+    private void waitBytesWithTimeout(String methodName, int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("waitBytesWithTimeout()");
+        boolean timeIsOut = true;
+        long startTime = System.currentTimeMillis();
+        while((System.currentTimeMillis() - startTime) < timeout){
+            if(getInputBufferBytesCount() >= byteCount){
+                timeIsOut = false;
+                break;
+            }
+            try {
+                Thread.sleep(0, 100);//Need to sleep some time to prevent high CPU loading
+            }
+            catch (InterruptedException ex) {
+                //Do nothing
+            }
+        }
+        if(timeIsOut){
+            throw new SerialPortTimeoutException(portName, methodName, timeout);
+        }
+    }
+
+    /**
+     * Read byte array from port
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return byte array with "byteCount" length
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public byte[] readBytes(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readBytes()");
+        waitBytesWithTimeout("readBytes()", byteCount, timeout);
+        return readBytes(byteCount);
+    }
+
+    /**
+     * Read string from port
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return byte array with "byteCount" length converted to String
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public String readString(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readString()");
+        waitBytesWithTimeout("readString()", byteCount, timeout);
+        return readString(byteCount);
+    }
+
+    /**
+     * Read Hex string from port (example: FF 0A FF). Separator by default is a space
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return byte array with "byteCount" length converted to Hexadecimal String
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public String readHexString(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readHexString()");
+        waitBytesWithTimeout("readHexString()", byteCount, timeout);
+        return readHexString(byteCount);
+    }
+
+    /**
+     * Read Hex string from port with setted separator (example if separator is "::": FF::0A::FF)
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return byte array with "byteCount" length converted to Hexadecimal String
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public String readHexString(int byteCount, String separator, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readHexString()");
+        waitBytesWithTimeout("readHexString()", byteCount, timeout);
+        return readHexString(byteCount, separator);
+    }
+
+    /**
+     * Read Hex String array from port
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return String array with "byteCount" length and Hexadecimal String values
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public String[] readHexStringArray(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readHexStringArray()");
+        waitBytesWithTimeout("readHexStringArray()", byteCount, timeout);
+        return readHexStringArray(byteCount);
+    }
+
+    /**
+     * Read int array from port
+     *
+     * @param byteCount count of bytes for reading
+     * @param timeout timeout in milliseconds
+     *
+     * @return int array with values in range from 0 to 255
+     *
+     * @throws SerialPortException
+     * @throws SerialPortTimeoutException
+     *
+     * @since 2.0
+     */
+    public int[] readIntArray(int byteCount, int timeout) throws SerialPortException, SerialPortTimeoutException {
+        checkPortOpened("readIntArray()");
+        waitBytesWithTimeout("readIntArray()", byteCount, timeout);
+        return readIntArray(byteCount);
     }
 
     /**
@@ -609,7 +781,7 @@ public class SerialPort {
      * @since 0.8
      */
     public int[] readIntArray() throws SerialPortException {
-        checkPortOpened("readHex()");
+        checkPortOpened("readIntArray()");
         int byteCount = getInputBufferBytesCount();
         if(byteCount <= 0){
             return null;
@@ -800,27 +972,7 @@ public class SerialPort {
      * @throws SerialPortException
      */
     public void addEventListener(SerialPortEventListener listener) throws SerialPortException {
-        checkPortOpened("addEventListener()");
-        if(!eventListenerAdded){
-            if(maskAssigned){
-                eventListener = listener;
-                eventThread = getNewEventThread();
-                eventThread.setName("EventThread " + portName);
-                eventThread.start();
-                eventListenerAdded = true;
-            }
-            else {
-                setEventsMask(MASK_RXCHAR);
-                eventListener = listener;
-                eventThread = getNewEventThread();
-                eventThread.setName("EventThread " + portName);
-                eventThread.start();
-                eventListenerAdded = true;
-            }
-        }
-        else {
-            throw new SerialPortException(portName, "addEventListener()", SerialPortException.TYPE_LISTENER_ALREADY_ADDED);
-        }
+        addEventListener(listener, MASK_RXCHAR, false);
     }
 
     /**
@@ -834,12 +986,45 @@ public class SerialPort {
      * @throws SerialPortException
      */
     public void addEventListener(SerialPortEventListener listener, int mask) throws SerialPortException {
+        addEventListener(listener, mask, true);
+    }
+
+    /**
+     * Internal method. Add event listener. Object of <b>"SerialPortEventListener"</b> type shall be sent
+     * to the method. This object shall be properly described, as it will be in
+     * charge for handling of occurred events. Also events mask shall be sent to
+     * this method, to do it use variables with prefix <b>"MASK_"</b> for example <b>"MASK_RXCHAR"</b>. If
+     * <b>overwriteMask == true</b> and mask has been already assigned it value will be rewrited by <b>mask</b>
+     * value, if <b>overwriteMask == false</b> and mask has been already assigned the new <b>mask</b> value will be ignored,
+     * if there is no assigned mask to this serial port the <b>mask</b> value will be used for setting it up in spite of
+     * <b>overwriteMask</b> value
+     *
+     * @see #setEventsMask(int) setEventsMask(int mask)
+     *
+     * @throws SerialPortException
+     */
+    private void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
         checkPortOpened("addEventListener()");
         if(!eventListenerAdded){
-            setEventsMask(mask);
+            if((maskAssigned && overwriteMask) || !maskAssigned) {
+                setEventsMask(mask);
+            }
             eventListener = listener;
             eventThread = getNewEventThread();
             eventThread.setName("EventThread " + portName);
+            //since 2.2.0 ->
+            try {
+                Method method = eventListener.getClass().getMethod("errorOccurred", new Class[]{SerialPortException.class});
+                method.setAccessible(true);
+                methodErrorOccurred = method;
+            }
+            catch (SecurityException ex) {
+                //Do nothing
+            }
+            catch (NoSuchMethodException ex) {
+                //Do nothing
+            }
+            //<- since 2.2.0
             eventThread.start();
             eventListenerAdded = true;
         }
@@ -887,6 +1072,7 @@ public class SerialPort {
                 }
             }
         }
+        methodErrorOccurred = null;
         eventListenerAdded = false;
         return true;
     }
@@ -924,6 +1110,15 @@ public class SerialPort {
                 for(int i = 0; i < eventArray.length; i++){
                     if(eventArray[i][0] > 0 && !threadTerminated){
                         eventListener.serialEvent(new SerialPortEvent(portName, eventArray[i][0], eventArray[i][1]));
+                        //FIXME
+                        /*if(methodErrorOccurred != null){
+                            try {
+                                methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
+                            }
+                            catch (Exception ex) {
+                                System.out.println(ex);
+                            }
+                        }*/
                     }
                 }
             }
