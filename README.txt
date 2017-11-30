@@ -1,3 +1,10 @@
+
+This fork of jSSC add support (library) for Onion Omega.
+ * tested on Omega2+ only read/write operations (31.10.2017)
+ * https://docs.onion.io/omega2-docs/omega2.html
+
+============= Original Text ==============
+
 jSSC-2.8.0 Release version (24.01.2014)
 
 This version contains native libs for Windows(x86, x86-64), Linux(x86, x86-64, ARM soft & hard float), Solaris(x86, x86-64), Mac OS X(x86, x86-64, PPC, PPC64).
