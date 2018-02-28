@@ -53,7 +53,7 @@ public class SerialPortList {
                 break;
             }
             case SerialNativeInterface.OS_MAC_OS_X: {
-                PORTNAMES_REGEXP = Pattern.compile("tty.(serial|usbserial|usbmodem).*");
+                PORTNAMES_REGEXP = Pattern.compile("tty.(serial|usbserial|usbmodem|slab).*", Pattern.CASE_INSENSITIVE);
                 PORTNAMES_PATH = "/dev/";
                 break;
             }
