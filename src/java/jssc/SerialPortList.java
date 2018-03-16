@@ -47,7 +47,7 @@ public class SerialPortList {
         serialInterface = new SerialNativeInterface();
         switch (SerialNativeInterface.getOsType()) {
             case SerialNativeInterface.OS_LINUX: {
-                PORTNAMES_REGEXP = Pattern.compile("(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO)[0-9]{1,3}");
+                PORTNAMES_REGEXP = Pattern.compile("(serial|ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO)[0-9]{1,3}");
                 PORTNAMES_PATH = "/dev/";
                 break;
             }
