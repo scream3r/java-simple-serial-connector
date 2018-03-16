@@ -25,7 +25,11 @@
 package jssc;
 
 import java.io.File;
+import java.io.FileReader;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -43,7 +47,7 @@ public class SerialPortList {
         serialInterface = new SerialNativeInterface();
         switch (SerialNativeInterface.getOsType()) {
             case SerialNativeInterface.OS_LINUX: {
-                PORTNAMES_REGEXP = Pattern.compile("(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO)[0-9]{1,3}");
+                PORTNAMES_REGEXP = Pattern.compile("(serial|ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO)[0-9]{1,3}");
                 PORTNAMES_PATH = "/dev/";
                 break;
             }
@@ -53,7 +57,7 @@ public class SerialPortList {
                 break;
             }
             case SerialNativeInterface.OS_MAC_OS_X: {
-                PORTNAMES_REGEXP = Pattern.compile("tty.(serial|usbserial|usbmodem).*");
+                PORTNAMES_REGEXP = Pattern.compile("(cu|tty)\\..+");
                 PORTNAMES_PATH = "/dev/";
                 break;
             }
@@ -330,6 +334,7 @@ public class SerialPortList {
                     String fileName = file.getName();
                     if(!file.isDirectory() && !file.isFile() && pattern.matcher(fileName).find()){
                         String portName = searchPath + fileName;
+                        /*
                         long portHandle = serialInterface.openPort(portName, false);//Open port without TIOCEXCL
                         if(portHandle < 0 && portHandle != SerialNativeInterface.ERR_PORT_BUSY){
                             continue;
@@ -337,6 +342,7 @@ public class SerialPortList {
                         else if(portHandle != SerialNativeInterface.ERR_PORT_BUSY) {
                             serialInterface.closePort(portHandle);
                         }
+                        */
                         portsTree.add(portName);
                     }
                 }
@@ -344,5 +350,76 @@ public class SerialPortList {
             }
         }
         return returnArray;
+    }
+
+    public static Map<String, String> getPortProperties(String portName) {
+        if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_LINUX) {
+            return getLinuxPortProperties(portName);
+        } else if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_MAC_OS_X) {
+            return getNativePortProperties(portName);
+        } else if(SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS){
+            // TODO
+            return new HashMap<String, String>();
+        } else {
+            return new HashMap<String, String>();
+        }
+    }
+
+    public static Map<String, String> getLinuxPortProperties(String portName) {
+        Map<String, String> props = new HashMap<String, String>();
+        try {
+            // portName has the format /dev/ttyUSB0
+            String dev = portName.split("/")[2];
+            File sysfsNode = new File("/sys/bus/usb-serial/devices/"+dev);
+
+            // resolve the symbolic link and store the resulting components in an array
+            String[] sysfsPath = sysfsNode.getCanonicalPath().split("/");
+
+            // walk the tree to the root
+            for (int i=sysfsPath.length-2; 0 < i; i--) {
+                String curPath = "/";
+                for (int j=1; j <= i; j++) {
+                    curPath += sysfsPath[j]+"/";
+                }
+
+                // look for specific attributes
+                String[] attribs = { "idProduct", "idVendor", "manufacturer", "product", "serial" };
+                for (int j=0; j < attribs.length; j++) {
+                    try {
+                        Scanner in = new Scanner(new FileReader(curPath+attribs[j]));
+                        // we treat the values just as strings
+                        props.put(attribs[j], in.next());
+                    } catch (Exception e) {
+                        // ignore the attribute
+                    }
+                }
+
+                // stop once we have at least one attribute
+                if (0 < props.size()) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            // nothing to do, return what we have so far
+        }
+        return props;
+    }
+
+    public static Map<String, String> getNativePortProperties(String portName) {
+        Map<String, String> props = new HashMap<String, String>();
+        try {
+            // use JNI functions to read those properties
+            String[] names = { "idProduct", "idVendor", "manufacturer", "product", "serial" };
+            String[] values = SerialNativeInterface.getPortProperties(portName);
+
+            for (int i=0; i < names.length; i++) {
+                if (values[i] != null) {
+                    props.put(names[i], values[i]);
+                }
+            }
+        } catch (Exception e) {
+            // nothing to do, return what we have so far
+        }
+        return props;
     }
 }
