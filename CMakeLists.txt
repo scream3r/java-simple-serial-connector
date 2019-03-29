@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 project(jssc VERSION 2.8.0 DESCRIPTION "Java Simple Serial Connector")
 
+find_package(Java)
 find_package(JNI)
 
 # Kitware-recommended technique for defaulting to 'Release' mode
@@ -37,12 +38,18 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 			find_package(JNI)
 		endif()
 	endif()
+elseif(MSVC)
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 endif()
 
 if(WIN32)
 	set(JSSC_PLATFORM "windows")
 	# Disable optimization for Release builds (XP/Server 2003)
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O0")
+	if(NOT MSVC)
+		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O0")
+	else()
+		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Od")
+	endif()
 else()
 	set(JSSC_PLATFORM "_nix_based")
 	# Sane level of optimization for Release builds

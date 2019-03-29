@@ -29,6 +29,8 @@
 
 //#include <iostream>
 
+#define MAX_PORT_NAME_STR_LEN 32
+
 /*
  * Get native library version
  */
@@ -46,7 +48,12 @@ JNIEXPORT jlong JNICALL Java_jssc_SerialNativeInterface_openPort(JNIEnv *env, jo
     const char* port = env->GetStringUTFChars(portName, JNI_FALSE);
 
     //since 2.1.0 -> string concat fix
-    char portFullName[strlen(prefix) + strlen(port) + 1];
+    char portFullName[MAX_PORT_NAME_STR_LEN];
+
+    if(strlen(prefix) + strlen(port) + 1 > sizeof(portFullName)){
+        return (jlong)((HANDLE)jssc_SerialNativeInterface_ERR_PORT_NOT_FOUND);
+    }
+
     strcpy(portFullName, prefix);
     strcat(portFullName, port);
     //<- since 2.1.0
@@ -259,8 +266,15 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     DWORD lpNumberOfBytesTransferred;
     DWORD lpNumberOfBytesRead;
     OVERLAPPED *overlapped = new OVERLAPPED();
-    jbyte lpBuffer[byteCount];
+    jbyte *lpBuffer = NULL;
     jbyteArray returnArray = env->NewByteArray(byteCount);
+
+    lpBuffer = (jbyte *)malloc(byteCount * sizeof(jbyte));
+    if(lpBuffer == NULL){
+        // return an empty array
+        return returnArray;
+    }
+
     overlapped->hEvent = CreateEventA(NULL, true, false, NULL);
     if(ReadFile(hComm, lpBuffer, (DWORD)byteCount, &lpNumberOfBytesRead, overlapped)){
         env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
@@ -274,6 +288,7 @@ JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
     }
     CloseHandle(overlapped->hEvent);
     delete overlapped;
+    free(lpBuffer);
     return returnArray;
 }
 
