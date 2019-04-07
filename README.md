@@ -11,3 +11,4 @@ A small, single Java library for working with serial ports across various system
 
 ### Developers
 * [Compile this project from source](../../wiki/compiling)
+* [Chat on Slack](https://join.slack.com/t/java-native/shared_invite/enQtNjAyODYzNzM4MjQ0LTFlNmU1YTAyZDZjMWVmMjU4NzFkZDY5ZjIwYmVlYmYxMWE0NTMxYTJlZTEzMGVhZWVhNDNkNDkwMTVhYjhmYTk)
