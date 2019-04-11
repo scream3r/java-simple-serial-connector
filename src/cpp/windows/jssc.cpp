@@ -25,7 +25,8 @@
 #include <jni.h>
 #include <stdlib.h>
 #include <windows.h>
-#include "../jssc_SerialNativeInterface.h"
+#include <jssc_SerialNativeInterface.h>
+#include "version.h"
 
 //#include <iostream>
 
@@ -34,8 +35,8 @@
 /*
  * Get native library version
  */
-JNIEXPORT jstring JNICALL Java_jssc_SerialNativeInterface_getNativeLibraryVersion(JNIEnv *env, jobject object) {
-    return env->NewStringUTF(jSSC_NATIVE_LIB_VERSION);
+JNIEXPORT jstring JNICALL Java_jssc_SerialNativeInterface_getNativeLibraryVersion(JNIEnv *env, jclass clazz) {
+    return env->NewStringUTF(JSSC_VERSION);
 }
 
 /*

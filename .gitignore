@@ -1,4 +1,6 @@
 build/
+# the maven convention for built files
+target/
 
 # Prerequisites
 *.d
@@ -12,11 +14,6 @@ build/
 # Precompiled Headers
 *.gch
 *.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
 
 # Fortran module files
 *.mod
@@ -32,3 +29,10 @@ build/
 *.exe
 *.out
 *.app
+
+# IDE files: IntellIJ
+.idea/
+*.iml
+
+# IDE files: eclipse
+.settings/

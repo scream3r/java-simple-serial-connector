@@ -1,0 +1,75 @@
+language: java
+
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.jabba/jdk
+
+before_cache:
+  - rm -rf $HOME/.m2/repository/com/github/java-native
+
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++
+    - os: linux
+      env: PROFILE=m32
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++-multilib
+    - os: linux
+      env: PROFILE=mingw32
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++-mingw-w64-i686
+    - os: linux
+      env: PROFILE=mingw64
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++-mingw-w64-x86-64
+    - os: linux
+      env: PROFILE=armsf,armtrusty
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++-arm-linux-gnueabi
+    - os: linux
+      env: PROFILE=aarch64
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++-aarch64-linux-gnu
+    - os: linux
+      env: PROFILE=ppc64
+      addons:
+        apt:
+          packages:
+            - cmake3
+            - g++-powerpc64le-linux-gnu
+    - os: osx
+      addons:
+        homebrew:
+          packages:
+            - cmake
+
+install:
+  - mvn dependency:resolve
+
+script: if [ -z "$PROFILE" ]; then mvn --batch-mode; else mvn -P "$PROFILE" --batch-mode; fi
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+

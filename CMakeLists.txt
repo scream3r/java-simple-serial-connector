@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 3.9)
-project(jssc VERSION 2.8.0 DESCRIPTION "Java Simple Serial Connector")
+cmake_minimum_required(VERSION 3.0)
+cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0042 NEW)
+
+project(jssc VERSION 2.7.1 LANGUAGES CXX)
 
 find_package(Java)
 find_package(JNI)
@@ -56,15 +59,60 @@ else()
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 endif()
 
-add_library(jssc SHARED
-    src/cpp/${JSSC_PLATFORM}/jssc.cpp
-)
+# Detect platform if -DNATIVE_LIB_DIR is not provided
+# TODO: Handle arm, hardfloat, etc
+if(NOT NATIVE_LIB_DIR)
+	# windows, linux, darwin, etc
+	string(TOLOWER "${CMAKE_SYSTEM_NAME}" OS_NAME)
+	if(OS_NAME MATCHES "darwin")
+		set(OS_NAME "osx")
+	endif()
 
-target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${JSSC_ADDITIONAL_INCLUDES})
+	# 32-bit or 64-bit
+	#FIXME: Might fail on cross-compile
+	if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+		set(OS_BITS 64)
+	else()
+		set(OS_BITS 32)
+	endif()
+	SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
+endif()
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/natives/${NATIVE_LIB_DIR})
 
-set_target_properties(jssc PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(jssc PROPERTIES PUBLIC_HEADER src/jssc_SerialNativeInterface.h)
+# version.h using #cmakedefine for version from pom.xml.
+set(JSSC_VERSION "0.0.0-UNKNOWN")
+file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/pom.xml POM_FILE)
+foreach(POM_LINE ${POM_FILE})
+	# Assume first "<version>" is the project version
+	if(POM_LINE MATCHES "<version>")
+		string(REGEX REPLACE "^[ \t]+|<[^>]*>" "" DETECTED_VERSION "${POM_LINE}")
+		string(STRIP "${DETECTED_VERSION}" DETECTED_VERSION)
+		if(DETECTED_VERSION STREQUAL "")
+			MESSAGE(WARNING "Could not parse version from pom.xml, defaulting to \"${JSSC_VERSION}\"")
+		else()
+			SET(JSSC_VERSION "${DETECTED_VERSION}")
+			MESSAGE(STATUS "Found version \"${JSSC_VERSION}\" in pom.xml")
+		endif()
+		break()
+	endif()
+endforeach()
+configure_file(src/cpp/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
+
+add_library(jssc SHARED src/cpp/${JSSC_PLATFORM}/jssc.cpp)
+
+target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR} ${JSSC_ADDITIONAL_INCLUDES})
+
+set_target_properties(jssc PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/jssc_SerialNativeInterface.h)
 set_target_properties(jssc PROPERTIES POSITION_INDEPENDENT_CODE ON)
+if(WIN32)
+	# Fix paths for MSVC (Debug/Release) and MINGW
+	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+	set_target_properties(jssc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+endif()
+if(FORCE_M32)
+	# Build 32-bit binary on Linux
+	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m32 LINK_FLAGS -m32)
+endif()
 
 # Call strip on non-debug builds
 if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
@@ -72,4 +120,13 @@ if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
 		set(STRIP_ARGS -x)
 	endif()
 	add_custom_command(TARGET jssc POST_BUILD COMMAND "${CMAKE_STRIP}" ${STRIP_ARGS} $<TARGET_FILE:jssc>)
+endif()
+
+# Handle compiler warnings
+if(MSVC)
+	#TODO Treat warnings as errors /WX
+	target_compile_options(jssc PRIVATE /W4)
+else()
+	#TODO Treat warnings as errors -Werror
+	target_compile_options(jssc PRIVATE -Wall -Wextra -pedantic)
 endif()

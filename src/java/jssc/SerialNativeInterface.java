@@ -24,11 +24,9 @@
  */
 package jssc;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import org.scijava.nativelib.NativeLoader;
+
+import java.io.IOException;
 
 /**
  *
@@ -77,185 +75,11 @@ public class SerialNativeInterface {
     public static final String PROPERTY_JSSC_PARMRK = "JSSC_PARMRK";
 
     static {
-        String libFolderPath;
-        String libName;
-
-        String osName = System.getProperty("os.name");
-        String architecture = System.getProperty("os.arch");
-        String userHome = System.getProperty("user.home");
-        String fileSeparator = System.getProperty("file.separator");
-        String tmpFolder = System.getProperty("java.io.tmpdir");
-
-        //since 2.3.0 ->
-        String libRootFolder = new File(userHome).canWrite() ? userHome : tmpFolder;
-        //<- since 2.3.0
-
-        String javaLibPath = System.getProperty("java.library.path");//since 2.1.0
-
-        if(osName.equals("Linux")){
-            osName = "linux";
-            osType = OS_LINUX;
+        try {
+            NativeLoader.loadLibrary("jssc");
+        } catch (IOException ioException) {
+            throw new UnsatisfiedLinkError("Could not load the jssc library: " + ioException.getMessage());
         }
-        else if(osName.startsWith("Win")){
-            osName = "windows";
-            osType = OS_WINDOWS;
-        }//since 0.9.0 ->
-        else if(osName.equals("SunOS")){
-            osName = "solaris";
-            osType = OS_SOLARIS;
-        }
-        else if(osName.equals("Mac OS X") || osName.equals("Darwin")){//os.name "Darwin" since 2.6.0
-            osName = "mac_os_x";
-            osType = OS_MAC_OS_X;
-        }//<- since 0.9.0
-
-        if(architecture.equals("i386") || architecture.equals("i686")){
-            architecture = "x86";
-        }
-        else if(architecture.equals("amd64") || architecture.equals("universal")){//os.arch "universal" since 2.6.0
-            architecture = "x86_64";
-        }
-        else if(architecture.equals("arm")) {//since 2.1.0
-            String floatStr = "sf";
-            if(javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")){
-                floatStr = "hf";
-            }
-            else {
-                try {
-                    Process readelfProcess =  Runtime.getRuntime().exec("readelf -A /proc/self/exe");
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
-                    String buffer = "";
-                    while((buffer = reader.readLine()) != null && !buffer.isEmpty()){
-                        if(buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())){
-                            floatStr = "hf";
-                            break;
-                        }
-                    }
-                    reader.close();
-                }
-                catch (Exception ex) {
-                    //Do nothing
-                }
-            }
-            architecture = "arm" + floatStr;
-        }
-        
-        libFolderPath = libRootFolder + fileSeparator + ".jssc" + fileSeparator + osName;
-        libName = "jSSC-" + libVersion + "_" + architecture;
-        libName = System.mapLibraryName(libName);
-
-        if(libName.endsWith(".dylib")){//Since 2.1.0 MacOSX 10.8 fix
-            libName = libName.replace(".dylib", ".jnilib");
-        }
-
-        boolean loadLib = false;
-
-        if(isLibFolderExist(libFolderPath)){
-            if(isLibFileExist(libFolderPath + fileSeparator + libName)){
-                loadLib = true;
-            }
-            else {
-                if(extractLib((libFolderPath + fileSeparator + libName), osName, libName)){
-                    loadLib = true;
-                }
-            }
-        }
-        else {
-            if(new File(libFolderPath).mkdirs()){
-                if(extractLib((libFolderPath + fileSeparator + libName), osName, libName)){
-                    loadLib = true;
-                }
-            }
-        }
-
-        if (loadLib) {
-            System.load(libFolderPath + fileSeparator + libName);
-            String versionBase = getLibraryBaseVersion();
-            String versionNative = getNativeLibraryVersion();
-            if (!versionBase.equals(versionNative)) {
-                System.err.println("Warning! jSSC Java and Native versions mismatch (Java: " + versionBase + ", Native: " + versionNative + ")");
-            }
-        }
-    }
-
-    /**
-     * Is library folder exists
-     *
-     * @param libFolderPath
-     *
-     * @since 0.8
-     */
-    private static boolean isLibFolderExist(String libFolderPath) {
-        boolean returnValue = false;
-        File folder = new File(libFolderPath);
-        if(folder.exists() && folder.isDirectory()){
-            returnValue = true;
-        }
-        return returnValue;
-    }
-
-    /**
-     * Is library file exists
-     * 
-     * @param libFilePath
-     *
-     * @since 0.8
-     */
-    private static boolean isLibFileExist(String libFilePath) {
-        boolean returnValue = false;
-        File folder = new File(libFilePath);
-        if(folder.exists() && folder.isFile()){
-            returnValue = true;
-        }
-        return returnValue;
-    }
-
-    /**
-     * Extract lib to lib folder
-     *
-     * @param libFilePath
-     * @param osName
-     * @param libName
-     *
-     * @since 0.8
-     */
-    private static boolean extractLib(String libFilePath, String osName, String libName) {
-        boolean returnValue = false;
-        File libFile = new File(libFilePath);
-        InputStream input = null;
-        FileOutputStream output = null;
-        input = SerialNativeInterface.class.getResourceAsStream("/libs/" + osName + "/" + libName);
-        if(input != null){
-            int read;
-            byte[] buffer = new byte[4096];
-            try {
-                output = new FileOutputStream(libFilePath);
-                while((read = input.read(buffer)) != -1){
-                    output.write(buffer, 0, read);
-                }
-                output.close();
-                input.close();
-                returnValue = true;
-            }
-            catch (Exception ex) {
-                try {
-                    output.close();
-                    if(libFile.exists()){
-                        libFile.delete();
-                    }
-                }
-                catch (Exception ex_out) {
-                    //Do nothing
-                }
-                try {
-                    input.close();
-                }
-                catch (Exception ex_in) {
-                    //Do nothing
-                }
-            }
-        }
-        return returnValue;
     }
 
     /**
