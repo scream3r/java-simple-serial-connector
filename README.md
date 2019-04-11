@@ -1,4 +1,4 @@
-![Travis-CI Status](https://travis-ci.org/java-native/java-simple-serial-connector.svg?branch=master)
+![Travis-CI Status](https://travis-ci.org/java-native/jssc.svg?branch=master)
 
 A small, single Java library for working with serial ports across various systems based on the work from [scream3r/java-simple-serial-connector](https://github.com/scream3r/java-simple-serial-connector).
 
