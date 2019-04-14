@@ -25,6 +25,7 @@
     <cmake.generate.extra></cmake.generate.extra>
     <cmake.generate.skip>false</cmake.generate.skip>
     <javah.skip>false</javah.skip>
+    <skip.fat.jar>true</skip.fat.jar>
     <maven.assembly.id>${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</maven.assembly.id>
     <!-- TODO: remove "os.detected.bitness"; already defined os-maven-plugin 1.6.3+ -->
     <os.detected.bitness>${sun.arch.data.model}</os.detected.bitness>
@@ -228,6 +229,20 @@
               </descriptors>
             </configuration>
           </execution>
+
+          <execution>
+            <id>fat-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <skipAssembly>${skip.fat.jar}</skipAssembly>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
@@ -324,6 +339,13 @@
          </plugin>
        </plugins>
      </build>
+    </profile>
+
+    <profile>
+      <id>fat-jar</id>
+      <properties>
+        <skip.fat.jar>false</skip.fat.jar>
+      </properties>
     </profile>
 
     <!-- cmake linux 32-bit profile -->
