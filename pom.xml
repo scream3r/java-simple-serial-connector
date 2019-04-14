@@ -11,7 +11,8 @@
   <properties>
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
-    <maven.compiler.release>6</maven.compiler.release>
+    <!-- default: empty for compatiblity with Java 8. -->
+    <maven.compiler.release />
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- custom directories and file paths a-z -->
@@ -42,6 +43,9 @@
     <plugin.osmaven.version>1.6.2</plugin.osmaven.version>
     <plugin.signature.version>1.1</plugin.signature.version>
     <plugin.surfire.version>3.0.0-M3</plugin.surfire.version>
+    <!-- keep below 3.1.0 because 3.1.0 fails on java 8. -->
+    <plugin.javadoc.version>3.0.1</plugin.javadoc.version>
+    <plugin.source.version>3.0.1</plugin.source.version>
   </properties>
 
   <organization>
@@ -94,6 +98,24 @@
         <version>${plugin.osmaven.version}</version>
       </extension>
     </extensions>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${plugin.javadoc.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${plugin.source.version}</version>
+        </plugin>
+
+      </plugins>
+
+    </pluginManagement>
 
     <plugins>
       <!-- create header file jdk<=8 -->
@@ -175,6 +197,17 @@
         <version>${plugin.jar.version}</version>
       </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <doclint>none</doclint>
+          <detectJavaApiLink>true</detectJavaApiLink>
+          <detectLinks>false</detectLinks>
+          <detectOfflineLinks>true</detectOfflineLinks>
+        </configuration>
+      </plugin>
+
       <!-- package the uber-jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -233,6 +266,7 @@
       </activation>
       <properties>
         <javah.skip>true</javah.skip>
+        <maven.compiler.release>6</maven.compiler.release>
       </properties>
       <build>
         <pluginManagement>
@@ -260,6 +294,36 @@
         <cmake.generate.skip>true</cmake.generate.skip>
         <cmake.compile.skip>true</cmake.compile.skip>
       </properties>
+
+     <build>
+       <plugins>
+         <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-source-plugin</artifactId>
+           <executions>
+             <execution>
+               <id>attach-sources</id>
+               <goals>
+                 <goal>jar</goal>
+               </goals>
+             </execution>
+           </executions>
+         </plugin>
+
+         <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-javadoc-plugin</artifactId>
+           <executions>
+             <execution>
+               <id>attach-javadocs</id>
+               <goals>
+                 <goal>jar</goal>
+               </goals>
+             </execution>
+           </executions>
+         </plugin>
+       </plugins>
+     </build>
     </profile>
 
     <!-- cmake linux 32-bit profile -->
