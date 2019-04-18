@@ -1014,7 +1014,7 @@ public class SerialPort {
             eventThread.setName("EventThread " + portName);
             //since 2.2.0 ->
             try {
-                Method method = eventListener.getClass().getMethod("errorOccurred", new Class[]{SerialPortException.class});
+                Method method = eventListener.getClass().getMethod("errorOccurred", new Class<?>[]{SerialPortException.class});
                 method.setAccessible(true);
                 methodErrorOccurred = method;
             }

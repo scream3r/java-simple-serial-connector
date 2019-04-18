@@ -29,7 +29,7 @@ package jssc;
  * @author scream3r
  */
 public class SerialPortTimeoutException extends Exception {
-
+    final private static long serialVersionUID = 1L;
     private String portName;
     private String methodName;
     private int timeoutValue;
