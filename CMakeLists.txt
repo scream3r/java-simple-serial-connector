@@ -29,7 +29,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	if(WIN32)
 		# Assume mingw, use "-static"
 		set(CMAKE_CXX_STANDARD_LIBRARIES "-static ${CMAKE_CXX_STANDARD_LIBRARIES}")
-	else()
+	elseif(NOT CMAKE_SYSTEM_NAME STREQUAL SunOS)
 		set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CXX_STANDARD_LIBRARIES}")
 	endif()
 	execute_process(COMMAND uname OUTPUT_VARIABLE OS_TYPE OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -70,10 +70,16 @@ if(NOT NATIVE_LIB_DIR)
 
 	# 32-bit or 64-bit
 	#FIXME: Might fail on cross-compile
-	if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+	if(FORCE_M32)
+		set(OS_BITS 32)
+	elseif(FORCE_M64)
 		set(OS_BITS 64)
 	else()
-		set(OS_BITS 32)
+		if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+			set(OS_BITS 64)
+		else()
+			set(OS_BITS 32)
+		endif()
 	endif()
 	SET(NATIVE_LIB_DIR ${OS_NAME}_${OS_BITS})
 endif()
@@ -112,6 +118,9 @@ endif()
 if(FORCE_M32)
 	# Build 32-bit binary on Linux
 	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m32 LINK_FLAGS -m32)
+elseif(FORCE_M64)
+	# Build 64-bit binary on Linux
+	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m64 LINK_FLAGS -m64)
 endif()
 
 # Call strip on non-debug builds
@@ -128,5 +137,5 @@ if(MSVC)
 	target_compile_options(jssc PRIVATE /W4)
 else()
 	#TODO Treat warnings as errors -Werror
-	target_compile_options(jssc PRIVATE -Wall -Wextra -pedantic)
+	target_compile_options(jssc PRIVATE -Wall -Wextra -pedantic -Wno-long-long)
 endif()

@@ -35,7 +35,7 @@
 #ifdef __linux__
     #include <linux/serial.h>
 #endif
-#ifdef __SunOS
+#ifdef __sun
     #include <sys/filio.h>//Needed for FIONREAD in Solaris
     #include <string.h>//Needed for select() function
 #endif

@@ -378,6 +378,19 @@
       </properties>
     </profile>
 
+    <!-- cmake linux 64-bit profile -->
+    <profile>
+      <id>m64</id>
+      <properties>
+        <os.detected.arch>x86_64</os.detected.arch>
+        <os.detected.bitness>64</os.detected.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.args>-DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generate.args>
+        <cmake.generate.extra>-DFORCE_M64=True</cmake.generate.extra>
+      </properties>
+    </profile>
+
     <!-- cmake windows-amd64 profile -->
     <profile>
       <id>win64</id>
