@@ -38,12 +38,12 @@ matrix:
             - cmake3
             - g++-mingw-w64-x86-64
     - os: linux
-      env: PROFILE=armsf,armtrusty
+      env: PROFILE=armhf,armtrusty
       addons:
         apt:
           packages:
             - cmake3
-            - g++-arm-linux-gnueabi
+            - g++-arm-linux-gnueabihf
     - os: linux
       env: PROFILE=aarch64
       addons:
