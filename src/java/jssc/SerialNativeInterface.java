@@ -75,6 +75,15 @@ public class SerialNativeInterface {
     public static final String PROPERTY_JSSC_PARMRK = "JSSC_PARMRK";
 
     static {
+        String osName = System.getProperty("os.name");
+        if(osName.equals("Linux"))
+            osType = OS_LINUX;
+        else if(osName.startsWith("Win"))
+            osType = OS_WINDOWS;
+        else if(osName.equals("SunOS"))
+            osType = OS_SOLARIS;
+        else if(osName.equals("Mac OS X") || osName.equals("Darwin"))
+            osType = OS_MAC_OS_X;
         try {
             NativeLoader.loadLibrary("jssc");
         } catch (IOException ioException) {
