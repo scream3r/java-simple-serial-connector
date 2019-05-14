@@ -34,7 +34,7 @@ import java.io.IOException;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "2.8"; //jSSC-2.8.0 Release from 24.01.2014
+    private static final String libVersion = "2.9";
     private static final String libMinorSuffix = "0"; //since 0.9.0
 
     public static final int OS_LINUX = 0;

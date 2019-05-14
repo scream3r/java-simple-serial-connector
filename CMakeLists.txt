@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
-cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0048 OLD)
 cmake_policy(SET CMP0042 NEW)
 
-project(jssc VERSION 2.7.1 LANGUAGES CXX)
+project(jssc CXX)
 
 find_package(Java)
 find_package(JNI)
@@ -47,6 +47,8 @@ endif()
 
 if(WIN32)
 	set(JSSC_PLATFORM "windows")
+	# Don't append "lib" to windows binaries
+	set(CMAKE_SHARED_LIBRARY_PREFIX "")
 	# Disable optimization for Release builds (XP/Server 2003)
 	if(NOT MSVC)
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O0")
