@@ -96,10 +96,10 @@ foreach(POM_LINE ${POM_FILE})
 		string(REGEX REPLACE "^[ \t]+|<[^>]*>" "" DETECTED_VERSION "${POM_LINE}")
 		string(STRIP "${DETECTED_VERSION}" DETECTED_VERSION)
 		if(DETECTED_VERSION STREQUAL "")
-			MESSAGE(WARNING "Could not parse version from pom.xml, defaulting to \"${JSSC_VERSION}\"")
+			MESSAGE(WARNING "Could not parse JSSC version from pom.xml, defaulting to \"${JSSC_VERSION}\"")
 		else()
 			SET(JSSC_VERSION "${DETECTED_VERSION}")
-			MESSAGE(STATUS "Found version \"${JSSC_VERSION}\" in pom.xml")
+			MESSAGE(STATUS "Found JSSC version \"${JSSC_VERSION}\" in pom.xml")
 		endif()
 		break()
 	endif()
@@ -108,6 +108,8 @@ configure_file(src/cpp/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
 
 add_library(jssc SHARED src/cpp/${JSSC_PLATFORM}/jssc.cpp)
 
+# Fall-back header for when maven is not available
+list(APPEND JSSC_ADDITIONAL_INCLUDES src/cpp/)
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR} ${JSSC_ADDITIONAL_INCLUDES})
 
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/jssc_SerialNativeInterface.h)
@@ -124,6 +126,10 @@ elseif(FORCE_M64)
 	# Build 64-bit binary on Linux
 	set_target_properties(jssc PROPERTIES COMPILE_FLAGS -m64 LINK_FLAGS -m64)
 endif()
+# Copy native library back to source tree
+add_custom_command(TARGET jssc POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/natives/ ${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources-precompiled/natives/
+)
 
 # Call strip on non-debug builds
 if(CMAKE_STRIP AND NOT CMAKE_BUILD_TYPE MATCHES "Deb")
