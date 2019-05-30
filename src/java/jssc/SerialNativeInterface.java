@@ -35,7 +35,7 @@ import java.io.IOException;
 public class SerialNativeInterface {
 
     private static final String libVersion = "2.9";
-    private static final String libMinorSuffix = "0"; //since 0.9.0
+    private static final String libMinorSuffix = "1"; //since 0.9.0
 
     public static final int OS_LINUX = 0;
     public static final int OS_WINDOWS = 1;
