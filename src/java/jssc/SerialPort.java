@@ -50,6 +50,7 @@ public class SerialPort {
     public static final int BAUDRATE_300 = 300;
     public static final int BAUDRATE_600 = 600;
     public static final int BAUDRATE_1200 = 1200;
+    public static final int BAUDRATE_2400 = 2400;
     public static final int BAUDRATE_4800 = 4800;
     public static final int BAUDRATE_9600 = 9600;
     public static final int BAUDRATE_14400 = 14400;
