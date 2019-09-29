@@ -621,6 +621,7 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getFlowControlMode
             returnValue |= FLOWCONTROL_XONXOFF_OUT;
         }
     }
+    delete settings;
     return returnValue;
 }
 
