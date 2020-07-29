@@ -10,7 +10,6 @@
 
   <properties>
     <java.version>1.6</java.version>
-    <!-- default: empty for compatiblity with Java 8. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- custom directories and file paths a-z -->
@@ -42,8 +41,7 @@
     <plugin.osmaven.version>1.6.2</plugin.osmaven.version>
     <plugin.signature.version>1.1</plugin.signature.version>
     <plugin.surfire.version>3.0.0-M3</plugin.surfire.version>
-    <!-- keep below 3.1.0 because 3.1.0 fails on java 8. -->
-    <plugin.javadoc.version>3.0.1</plugin.javadoc.version>
+    <plugin.javadoc.version>3.1.1</plugin.javadoc.version>
     <plugin.source.version>3.0.1</plugin.source.version>
     <plugin.compiler.version>3.8.0</plugin.compiler.version>
   </properties>
@@ -217,7 +215,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
-          <doclint>none</doclint>
           <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
           <javaApiLinks>
             <property>

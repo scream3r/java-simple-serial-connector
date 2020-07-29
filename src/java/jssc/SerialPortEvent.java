@@ -66,17 +66,17 @@ public class SerialPortEvent {
 
     /**
      * Getting event value
-     * <br></br>
-     * <br><u><b>Event values depending on their types:</b></u></br>
-     * <br><b>RXCHAR</b> - bytes count in input buffer</br>
-     * <br><b>RXFLAG</b> - bytes count in input buffer (Not supported in Linux)</br>
-     * <br><b>TXEMPTY</b> - bytes count in output buffer</br>
-     * <br><b>CTS</b> - state of CTS line (0 - OFF, 1 - ON)</br>
-     * <br><b>DSR</b> - state of DSR line (0 - OFF, 1 - ON)</br>
-     * <br><b>RLSD</b> - state of RLSD line (0 - OFF, 1 - ON)</br>
-     * <br><b>BREAK</b> - 0</br>
-     * <br><b>RING</b> - state of RING line (0 - OFF, 1 - ON)</br>
-     * <br><b>ERR</b> - mask of errors</br>
+     * <br>
+     * <br><u><b>Event values depending on their types:</b></u>
+     * <br><b>RXCHAR</b> - bytes count in input buffer
+     * <br><b>RXFLAG</b> - bytes count in input buffer (Not supported in Linux)
+     * <br><b>TXEMPTY</b> - bytes count in output buffer
+     * <br><b>CTS</b> - state of CTS line (0 - OFF, 1 - ON)
+     * <br><b>DSR</b> - state of DSR line (0 - OFF, 1 - ON)
+     * <br><b>RLSD</b> - state of RLSD line (0 - OFF, 1 - ON)
+     * <br><b>BREAK</b> - 0
+     * <br><b>RING</b> - state of RING line (0 - OFF, 1 - ON)
+     * <br><b>ERR</b> - mask of errors
      */
     public int getEventValue() {
         return eventValue;

@@ -256,8 +256,8 @@ public class SerialNativeInterface {
      * @param handle handle of opened port
      *
      * @return Method returns the array that contains info about bytes count in buffers:
-     * <br><b>element 0</b> - input buffer</br>
-     * <br><b>element 1</b> - output buffer</br>
+     * <br><b>element 0</b> - input buffer
+     * <br><b>element 1</b> - output buffer
      *
      * @since 0.8
      */
@@ -299,10 +299,10 @@ public class SerialNativeInterface {
      * @param handle handle of opened port
      *
      * @return Method returns the array containing information about lines in following order:
-     * <br><b>element 0</b> - <b>CTS</b> line state</br>
-     * <br><b>element 1</b> - <b>DSR</b> line state</br>
-     * <br><b>element 2</b> - <b>RING</b> line state</br>
-     * <br><b>element 3</b> - <b>RLSD</b> line state</br>
+     * <br><b>element 0</b> - <b>CTS</b> line state
+     * <br><b>element 1</b> - <b>DSR</b> line state
+     * <br><b>element 2</b> - <b>RING</b> line state
+     * <br><b>element 3</b> - <b>RLSD</b> line state
      */
     public native int[] getLinesStatus(long handle);
 

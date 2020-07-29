@@ -884,10 +884,10 @@ public class SerialPort {
      * Getting lines status. Lines status is sent as 0 – OFF and 1 - ON
      *
      * @return Method returns the array containing information about lines in following order:
-     * <br><b>element 0</b> - <b>CTS</b> line state</br>
-     * <br><b>element 1</b> - <b>DSR</b> line state</br>
-     * <br><b>element 2</b> - <b>RING</b> line state</br>
-     * <br><b>element 3</b> - <b>RLSD</b> line state</br>
+     * <br><b>element 0</b> - <b>CTS</b> line state
+     * <br><b>element 1</b> - <b>DSR</b> line state
+     * <br><b>element 2</b> - <b>RING</b> line state
+     * <br><b>element 3</b> - <b>RLSD</b> line state
      *
      * @throws SerialPortException
      */
