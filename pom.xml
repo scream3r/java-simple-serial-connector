@@ -4,9 +4,37 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.github.java-native.jssc</groupId>
+  <groupId>io.github.java-native</groupId>
   <artifactId>jssc</artifactId>
-  <version>2.9.1</version>
+  <version>2.9.2-SNAPSHOT</version>
+
+  <name>Java Simple Serial Connector</name>
+  <description>
+    A small, single Java library for working with serial ports across various systems
+    based on the work from scream3r/java-simple-serial-connector.
+  </description>
+  <url>https://github.com/java-native/jssc</url>
+
+  <licenses>
+    <license>
+      <name>GNU LGPL 3</name>
+      <url>http://www.gnu.org/licenses/lgpl.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Tres Finocchiaro</name>
+      <url>https://github.com/tresf</url>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/java-native/jssc.git</connection>
+    <developerConnection>scm:git:git@github.com:java-native/jssc.git</developerConnection>
+    <url>https://github.com/java-native/jssc</url>
+  </scm>
 
   <properties>
     <java.version>1.6</java.version>
@@ -46,19 +74,6 @@
     <plugin.compiler.version>3.8.0</plugin.compiler.version>
   </properties>
 
-  <organization>
-    <name>Java Native</name>
-    <url>https://github.com/java-native/</url>
-  </organization>
-
-  <licenses>
-    <license>
-      <name>GNU LGPL 3</name>
-      <url>http://www.gnu.org/licenses/lgpl.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-
   <dependencies>
     <dependency>
       <groupId>org.scijava</groupId>
@@ -81,8 +96,6 @@
 
   <build>
     <defaultGoal>install</defaultGoal>
-    <!-- FIXME: apply maven conventions -->
-    <sourceDirectory>src/java</sourceDirectory>
     <resources>
         <resource>
           <directory>${project.basedir}/src/main/resources-precompiled</directory>

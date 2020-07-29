@@ -104,12 +104,12 @@ foreach(POM_LINE ${POM_FILE})
 		break()
 	endif()
 endforeach()
-configure_file(src/cpp/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
+configure_file(src/main/cpp/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h @ONLY)
 
-add_library(jssc SHARED src/cpp/${JSSC_PLATFORM}/jssc.cpp)
+add_library(jssc SHARED src/main/cpp/${JSSC_PLATFORM}/jssc.cpp)
 
 # Fall-back header for when maven is not available
-list(APPEND JSSC_ADDITIONAL_INCLUDES src/cpp/)
+list(APPEND JSSC_ADDITIONAL_INCLUDES src/main/cpp/)
 target_include_directories(jssc PRIVATE ${JNI_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR} ${JSSC_ADDITIONAL_INCLUDES})
 
 set_target_properties(jssc PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/jssc_SerialNativeInterface.h)
