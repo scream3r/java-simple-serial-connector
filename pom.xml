@@ -6,7 +6,7 @@
 
   <groupId>io.github.java-native</groupId>
   <artifactId>jssc</artifactId>
-  <version>2.9.2-SNAPSHOT</version>
+  <version>2.9.2</version>
 
   <name>Java Simple Serial Connector</name>
   <description>
@@ -275,7 +275,7 @@
         </executions>
       </plugin>
 
-      <!-- check for java 6 compatiblity -->
+      <!-- check for java 6 compatibility -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>

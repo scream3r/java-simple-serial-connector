@@ -8,7 +8,7 @@ are to recompile binaries for each platform.
 
 ## Valid paths
 
-The old path structure is ambigious, but supported for compatiblity.
+The old path structure is ambiguous, but supported for compatibility.
 This structure must be used before `native-lib-loader` version 2.4.0.
 
   * `linux_32`
