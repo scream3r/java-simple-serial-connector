@@ -37,7 +37,7 @@
   </scm>
 
   <properties>
-    <java.version>1.6</java.version>
+    <target.java.version>6</target.java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- custom directories and file paths a-z -->
@@ -204,8 +204,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
+          <source>${target.java.version}</source>
+          <target>${target.java.version}</target>
           <compilerArgument>-Xlint:all</compilerArgument>
           <showWarnings>true</showWarnings>
           <showDeprecation>true</showDeprecation>
@@ -302,15 +302,19 @@
   </build>
 
   <profiles>
-    <!-- create header file jdk9+ -->
+
+    <!-- Standard profile for compiling classes with widest target range.
+         The resulting jar just works on jre6+ as well as a part of JPMS.
+         Resulting artifact is deployable to Maven Central -->
     <profile>
-      <id>java-9</id>
+      <id>jdk9+</id>
       <activation>
         <jdk>[9,)</jdk>
       </activation>
       <properties>
         <javah.skip>true</javah.skip>
-        <maven.compiler.release>6</maven.compiler.release>
+        <maven.compiler.release>${target.java.version}</maven.compiler.release>
+        <plugin.animalsniffer.version>1.20</plugin.animalsniffer.version>
       </properties>
       <build>
         <plugins>
@@ -322,9 +326,39 @@
                 <arg>${cmake.generated.directory}</arg>
               </compilerArgs>
             </configuration>
+            <executions>
+              <!-- compile everything to ensure module-info contains right entries -->
+              <execution>
+                <id>default-compile</id>
+                <configuration>
+                  <release>9</release>
+                  <compileSourceRoots>
+                    <sourceRoot>src/main/java</sourceRoot>
+                    <sourceRoot>src/main/module-info</sourceRoot>
+                  </compileSourceRoots>
+                </configuration>
+              </execution>
+              <!-- recompile everything for target VM except the module-info.java -->
+              <execution>
+                <id>minimal-target-jre-recompile</id>
+                <goals><goal>compile</goal></goals>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
+    </profile>
+
+    <!-- Convenience profile for users of JDKs past 11 who may want to
+         build the library ignoring no longer supported target version 6 -->
+    <profile>
+      <id>jdk12+</id>
+      <activation>
+        <jdk>[12,)</jdk>
+      </activation>
+      <properties>
+        <target.java.version>7</target.java.version>
+      </properties>
     </profile>
 
     <!-- collect existing native libraries for a distribution; skips native compilation -->
