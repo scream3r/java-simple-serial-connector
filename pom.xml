@@ -64,6 +64,7 @@
     <plugin.animalsniffer.version>1.17</plugin.animalsniffer.version>
     <plugin.antrun.version>1.8</plugin.antrun.version>
     <plugin.assembly.version>3.1.1</plugin.assembly.version>
+    <plugin.enforcer.version>3.0.0-M3</plugin.enforcer.version>
     <plugin.jar.version>3.1.1</plugin.jar.version>
     <plugin.nar.version>3.6.0</plugin.nar.version>
     <plugin.osmaven.version>1.6.2</plugin.osmaven.version>
@@ -134,6 +135,33 @@
     </pluginManagement>
 
     <plugins>
+      <!-- Warn about not fully supported java version -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${plugin.enforcer.version}</version>
+        <executions>
+          <execution>
+            <id>recommended-jdk</id>
+            <goals><goal>enforce</goal></goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[9,)</version>
+                  <level>WARN</level>
+                  <message>Current JDK does not support Java Platform Module System. Resulting jar cannot be used as Java module.</message>
+                </requireJavaVersion>
+                <requireJavaVersion>
+                  <version>(,12)</version>
+                  <level>WARN</level>
+                  <message>Current JDK does not support target version 6. Minimal JRE to use the library on is ${target.java.version}.</message>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- create header file jdk<=8 -->
       <plugin>
         <groupId>com.github.maven-nar</groupId>
