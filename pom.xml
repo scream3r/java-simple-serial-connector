@@ -545,10 +545,20 @@
         <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Armhf.cmake -DNATIVE_LIB_DIR=${os.detected.name}_arm</cmake.generate.args>
       </properties>
     </profile>
-
-    <!-- cmake arm 64-bit -->
+ 
+    <!-- cmake arm 64-bit linux -->
     <profile>
-      <id>aarch64</id>
+      <id>aarch64-linux</id>
+      <activation>
+          <os>
+            <family>Unix</family>
+            <name>Linux</name>
+          </os>
+          <property>
+            <name>cmake.build.arch</name>
+            <value>aarch64</value>
+          </property>
+      </activation>
       <properties>
         <os.detected.name>linux</os.detected.name>
         <os.detected.arch>aarch_64</os.detected.arch>
@@ -605,5 +615,35 @@
         <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generate.extra>
       </properties>
     </profile>
+
+     <!-- cmake arm 64-bit mac -->
+    <profile>
+      <id>armmac</id>
+      <properties>
+        <os.detected.name>osx</os.detected.name>
+        <os.detected.arch>aarch_64</os.detected.arch>
+        <os.detected.bitness>64</os.detected.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.args>-DCMAKE_OSX_ARCHITECTURES=arm64</cmake.generate.args>
+        <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generate.extra>
+      </properties>
+    </profile>
+
+    <!-- cmake intel 64-bit mac -->
+    <profile>
+      <id>intelmac</id>
+      <properties>
+        <os.detected.name>osx</os.detected.name>
+        <os.detected.arch>x86_64</os.detected.arch>
+        <os.detected.bitness>64</os.detected.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.args>-DCMAKE_OSX_ARCHITECTURES=x86_64</cmake.generate.args>
+        <cmake.generate.extra>-DNATIVE_LIB_DIR=${os.detected.name}_x64</cmake.generate.extra>
+      </properties>
+    </profile>
+
+
   </profiles>
 </project>
