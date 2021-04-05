@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0048 OLD)
 cmake_policy(SET CMP0042 NEW)
 # Determine if compiling on Apple and host arch before starting project
-if(APPLE) 
+if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
 	execute_process(COMMAND uname  -m OUTPUT_VARIABLE ARCH_TYPE OUTPUT_STRIP_TRAILING_WHITESPACE)	
 	SET(CMAKE_OSX_ARCHITECTURES "${ARCH_TYPE}" CACHE STRING "Build architectures for Mac OS X" FORCE)
 endif()
