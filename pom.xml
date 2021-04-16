@@ -478,6 +478,21 @@
       </properties>
     </profile>
 
+    <!-- cmake windows-aarch64 profile -->
+    <profile>
+      <id>winaarch64</id>
+      <properties>
+        <os.detected.name>windows</os.detected.name>
+        <os.detected.arch>aarch64</os.detected.arch>
+        <os.detected.bitness>64</os.detected.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.args>-DCMAKE_GENERATOR_PLATFORM=arm64 -DNATIVE_LIB_DIR=${os.detected.name}_arm64</cmake.generate.args>
+        <cmake.build.args>--config Release</cmake.build.args>
+        
+      </properties>
+    </profile>
+
     <!-- cmake windows-x86 profile -->
     <profile>
       <id>win32</id>
