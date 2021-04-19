@@ -11,6 +11,24 @@ A small, single Java library for working with serial ports across various system
     <version>2.9.2</version>
 </dependency>
 ```
+* or Gradle (KTS)
+```
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation("io.github.java-native:jssc:2.9.2")
+}
+```
+* or Gradle (Groovy)
+```
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation 'io.github.java-native:jssc:2.9.2'
+}
+```
 * [API code examples](../../wiki/examples)
 
 ### Support
