@@ -480,7 +480,7 @@
 
     <!-- cmake windows-aarch64 profile -->
     <profile>
-      <id>winaarch64</id>
+      <id>winarm64</id>
       <properties>
         <os.detected.name>windows</os.detected.name>
         <os.detected.arch>aarch64</os.detected.arch>
@@ -521,12 +521,25 @@
       </properties>
     </profile>
 
-    <!-- cmake mingw64 profile -->
+<!-- cmake mingw64 profile -->
     <profile>
       <id>mingw64</id>
       <properties>
         <os.detected.name>windows</os.detected.name>
         <os.detected.arch>x86_64</os.detected.arch>
+        <os.detected.bitness>64</os.detected.bitness>
+        <!-- skip test on cross-compile -->
+        <maven.test.skip>true</maven.test.skip>
+        <cmake.generate.args>-DCMAKE_TOOLCHAIN_FILE=toolchain/Mingw${os.detected.bitness}.cmake -DNATIVE_LIB_DIR=${os.detected.name}_${os.detected.bitness}</cmake.generate.args>
+      </properties>
+    </profile>
+
+    <!-- cmake mingw64 profile -->
+    <profile>
+      <id>mingwarm64</id>
+      <properties>
+        <os.detected.name>windows</os.detected.name>
+        <os.detected.arch>aarch64</os.detected.arch>
         <os.detected.bitness>64</os.detected.bitness>
         <!-- skip test on cross-compile -->
         <maven.test.skip>true</maven.test.skip>
