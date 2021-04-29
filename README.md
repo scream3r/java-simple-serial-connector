@@ -4,7 +4,7 @@ A small, single Java library for working with serial ports across various system
 
 ### Usage
 * [Download `.jar` manually](../../releases) or add using maven
-```
+```xml
 <dependency>
     <groupId>io.github.java-native</groupId>
     <artifactId>jssc</artifactId>
