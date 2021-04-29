@@ -12,7 +12,7 @@ A small, single Java library for working with serial ports across various system
 </dependency>
 ```
 * or Gradle (KTS)
-```
+```gradle
 repositories {
     mavenCentral()
 }
@@ -21,7 +21,7 @@ dependencies {
 }
 ```
 * or Gradle (Groovy)
-```
+```gradle
 repositories {
     mavenCentral()
 }
