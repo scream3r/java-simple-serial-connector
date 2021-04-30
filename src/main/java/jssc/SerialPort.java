@@ -484,16 +484,16 @@ public class SerialPort {
     public String readHexString(int byteCount, String separator) throws SerialPortException {
         checkPortOpened("readHexString()");
         String[] strBuffer = readHexStringArray(byteCount);
-        String returnString = "";
+        StringBuilder returnString = new StringBuilder();
         boolean insertSeparator = false;
         for(String value : strBuffer){
             if(insertSeparator){
-                returnString += separator;
+                returnString.append(separator);
             }
-            returnString += value;
+            returnString.append(value);
             insertSeparator = true;
         }
-        return returnString;
+        return returnString.toString();
     }
 
     /**
@@ -1108,9 +1108,9 @@ public class SerialPort {
         public void run() {
             while(!threadTerminated){
                 int[][] eventArray = waitEvents();
-                for(int i = 0; i < eventArray.length; i++){
-                    if(eventArray[i][0] > 0 && !threadTerminated){
-                        eventListener.serialEvent(new SerialPortEvent(portName, eventArray[i][0], eventArray[i][1]));
+                for(int[] event : eventArray){
+                    if(event[0] > 0 && !threadTerminated){
+                        eventListener.serialEvent(new SerialPortEvent(portName, event[0], event[1]));
                         //FIXME
                         /*if(methodErrorOccurred != null){
                             try {
@@ -1160,9 +1160,9 @@ public class SerialPort {
         //Need to get initial states
         public LinuxEventThread(){
             int[][] eventArray = waitEvents();
-            for(int i = 0; i < eventArray.length; i++){
-                int eventType = eventArray[i][0];
-                int eventValue = eventArray[i][1];
+            for(int[] event : eventArray){
+                int eventType = event[0];
+                int eventValue = event[1];
                 switch(eventType){
                     case INTERRUPT_BREAK:
                         interruptBreak = eventValue;
@@ -1202,10 +1202,10 @@ public class SerialPort {
                 int mask = getLinuxMask();
                 boolean interruptTxChanged = false;
                 int errorMask = 0;
-                for(int i = 0; i < eventArray.length; i++){
+                for(int[] event : eventArray){
                     boolean sendEvent = false;
-                    int eventType = eventArray[i][0];
-                    int eventValue = eventArray[i][1];
+                    int eventType = event[0];
+                    int eventValue = event[1];
                     if(eventType > 0 && !super.threadTerminated){
                         switch(eventType){
                             case INTERRUPT_BREAK:

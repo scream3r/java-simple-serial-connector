@@ -86,107 +86,62 @@ public class SerialPortEvent {
      * Method returns true if event of type <b>"RXCHAR"</b> is received and otherwise false
      */
     public boolean isRXCHAR() {
-        if(eventType == RXCHAR){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return eventType == RXCHAR;
     }
 
     /**
      * Method returns true if event of type <b>"RXFLAG"</b> is received and otherwise false
      */
     public boolean isRXFLAG() {
-        if(eventType == RXFLAG){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return eventType == RXFLAG;
     }
 
     /**
      * Method returns true if event of type <b>"TXEMPTY"</b> is received and otherwise false
      */
     public boolean isTXEMPTY() {
-        if(eventType == TXEMPTY){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return eventType == TXEMPTY;
     }
 
     /**
      * Method returns true if event of type <b>"CTS"</b> is received and otherwise false
      */
     public boolean isCTS() {
-        if(eventType == CTS){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return eventType == CTS;
     }
 
     /**
      * Method returns true if event of type <b>"DSR"</b> is received and otherwise false
      */
     public boolean isDSR() {
-        if(eventType == DSR){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return eventType == DSR;
     }
 
     /**
      * Method returns true if event of type <b>"RLSD"</b> is received and otherwise false
      */
     public boolean isRLSD() {
-        if(eventType == RLSD){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return eventType == RLSD;
     }
 
     /**
      * Method returns true if event of type <b>"BREAK"</b> is received and otherwise false
      */
     public boolean isBREAK() {
-        if(eventType == BREAK){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return eventType == BREAK;
     }
 
     /**
      * Method returns true if event of type <b>"ERR"</b> is received and otherwise false
      */
     public boolean isERR() {
-        if(eventType == ERR){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return eventType == ERR;
     }
 
     /**
      * Method returns true if event of type <b>"RING"</b> is received and otherwise false
      */
     public boolean isRING() {
-        if(eventType == RING){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return eventType == RING;
     }
 }
