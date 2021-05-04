@@ -151,7 +151,7 @@ public class SerialPort {
      */
     public boolean openPort() throws SerialPortException {
         if(portOpened){
-            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_ALREADY_OPENED);
+            throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_PORT_ALREADY_OPENED);
         }
         if(portName != null){
             boolean useTIOCEXCL = (System.getProperty(SerialNativeInterface.PROPERTY_JSSC_NO_TIOCEXCL) == null &&
@@ -159,19 +159,19 @@ public class SerialPort {
             portHandle = serialInterface.openPort(portName, useTIOCEXCL);//since 2.3.0 -> (if JSSC_NO_TIOCEXCL defined, exclusive lock for serial port will be disabled)
         }
         else {
-            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
+            throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_NULL_NOT_PERMITTED);//since 2.1.0 -> NULL port name fix
         }
         if(portHandle == SerialNativeInterface.ERR_PORT_BUSY){
-            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_BUSY);
+            throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_PORT_BUSY);
         }
         else if(portHandle == SerialNativeInterface.ERR_PORT_NOT_FOUND){
-            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PORT_NOT_FOUND);
+            throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_PORT_NOT_FOUND);
         }
         else if(portHandle == SerialNativeInterface.ERR_PERMISSION_DENIED){
-            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_PERMISSION_DENIED);
+            throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_PERMISSION_DENIED);
         }
         else if(portHandle == SerialNativeInterface.ERR_INCORRECT_SERIAL_PORT){
-            throw new SerialPortException(portName, "openPort()", SerialPortException.TYPE_INCORRECT_SERIAL_PORT);
+            throw new SerialPortException(this, "openPort()", SerialPortException.TYPE_INCORRECT_SERIAL_PORT);
         }
         portOpened = true;
         return true;
@@ -277,7 +277,7 @@ public class SerialPort {
         }
         boolean returnValue = serialInterface.setEventsMask(portHandle, mask);
         if(!returnValue){
-            throw new SerialPortException(portName, "setEventsMask()", SerialPortException.TYPE_CANT_SET_MASK);
+            throw new SerialPortException(this, "setEventsMask()", SerialPortException.TYPE_CANT_SET_MASK);
         }
         if(mask > 0){
             maskAssigned = true;
@@ -876,7 +876,7 @@ public class SerialPort {
      */
     private void checkPortOpened(String methodName) throws SerialPortException {
         if(!portOpened){
-            throw new SerialPortException(portName, methodName, SerialPortException.TYPE_PORT_NOT_OPENED);
+            throw new SerialPortException(this, methodName, SerialPortException.TYPE_PORT_NOT_OPENED);
         }
     }
 
@@ -1030,13 +1030,13 @@ public class SerialPort {
             eventListenerAdded = true;
         }
         else {
-            throw new SerialPortException(portName, "addEventListener()", SerialPortException.TYPE_LISTENER_ALREADY_ADDED);
+            throw new SerialPortException(this, "addEventListener()", SerialPortException.TYPE_LISTENER_ALREADY_ADDED);
         }
     }
 
     /**
      * Create new EventListener Thread depending on the type of operating system
-     * 
+     *
      * @since 0.8
      */
     private EventThread getNewEventThread() {
@@ -1059,7 +1059,7 @@ public class SerialPort {
     public boolean removeEventListener() throws SerialPortException {
         checkPortOpened("removeEventListener()");
         if(!eventListenerAdded){
-            throw new SerialPortException(portName, "removeEventListener()", SerialPortException.TYPE_CANT_REMOVE_LISTENER);
+            throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_CANT_REMOVE_LISTENER);
         }
         eventThread.terminateThread();
         setEventsMask(0);
@@ -1069,7 +1069,7 @@ public class SerialPort {
                     eventThread.join(5000);
                 }
                 catch (InterruptedException ex) {
-                    throw new SerialPortException(portName, "removeEventListener()", SerialPortException.TYPE_LISTENER_THREAD_INTERRUPTED);
+                    throw new SerialPortException(this, "removeEventListener()", SerialPortException.TYPE_LISTENER_THREAD_INTERRUPTED);
                 }
             }
         }
@@ -1110,11 +1110,11 @@ public class SerialPort {
                 int[][] eventArray = waitEvents();
                 for(int[] event : eventArray){
                     if(event[0] > 0 && !threadTerminated){
-                        eventListener.serialEvent(new SerialPortEvent(portName, event[0], event[1]));
+                        eventListener.serialEvent(new SerialPortEvent(SerialPort.this, event[0], event[1]));
                         //FIXME
                         /*if(methodErrorOccurred != null){
                             try {
-                                methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
+                                methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException(SerialPort.this, "method", "exception")});
                             }
                             catch (Exception ex) {
                                 System.out.println(ex);
@@ -1297,7 +1297,7 @@ public class SerialPort {
                                 break;
                         }
                         if(sendEvent){
-                            eventListener.serialEvent(new SerialPortEvent(portName, eventType, eventValue));
+                            eventListener.serialEvent(new SerialPortEvent(SerialPort.this, eventType, eventValue));
                         }
                     }
                 }

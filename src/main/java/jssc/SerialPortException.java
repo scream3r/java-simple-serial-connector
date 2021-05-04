@@ -61,11 +61,22 @@ public class SerialPortException extends Exception {
      */
     final public static String TYPE_INCORRECT_SERIAL_PORT = "Incorrect serial port";
 
-    private String portName;
+    private SerialPort port;
     private String methodName;
     private String exceptionType;
 
-    public SerialPortException(String portName, String methodName, String exceptionType){
+    public SerialPortException(SerialPort port, String methodName, String exceptionType) {
+        super("Port name - " + port.getPortName() + "; Method name - " + methodName + "; Exception type - " + exceptionType + ".");
+        this.port = port;
+        this.methodName = methodName;
+        this.exceptionType = exceptionType;
+    }
+
+    @Deprecated
+    private String portName;
+
+    @Deprecated
+    public SerialPortException(String portName, String methodName, String exceptionType) {
         super("Port name - " + portName + "; Method name - " + methodName + "; Exception type - " + exceptionType + ".");
         this.portName = portName;
         this.methodName = methodName;
@@ -75,21 +86,29 @@ public class SerialPortException extends Exception {
     /**
      * Getting port name during operation with which the exception was called
      */
-    public String getPortName(){
-        return portName;
+    @Deprecated
+    public String getPortName() {
+        return port.getPortName();
+    }
+
+    /**
+     * Getting the port which threw the exception
+     */
+    public SerialPort getPort() {
+        return port;
     }
 
     /**
      * Getting method name during execution of which the exception was called
      */
-    public String getMethodName(){
+    public String getMethodName() {
         return methodName;
     }
 
     /**
      * Getting exception type
      */
-    public String getExceptionType(){
+    public String getExceptionType() {
         return exceptionType;
     }
 }
