@@ -60,7 +60,7 @@
     <!-- dependency versions a-z -->
     <dependency.junit.version>4.12</dependency.junit.version>
     <dependency.logback.version>1.2.3</dependency.logback.version>
-    <dependency.nativelibloader.version>2.3.5</dependency.nativelibloader.version>
+    <dependency.nativelibloader.version>2.3.6</dependency.nativelibloader.version>
 
     <!-- plugin versions a-z -->
     <plugin.animalsniffer.version>1.17</plugin.animalsniffer.version>
