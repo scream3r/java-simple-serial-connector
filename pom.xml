@@ -520,7 +520,7 @@
       <id>x86_detected</id>
       <activation>
         <os>
-          <arch>amd64</arch>
+          <arch>x86</arch>
         </os>
       </activation>
       <properties>
