@@ -19,7 +19,7 @@ matrix:
           packages:
             - g++
     - os: linux
-      env: PROFILE=m32
+      env: PROFILE=x86
       addons:
         apt:
           packages:
@@ -36,6 +36,12 @@ matrix:
         apt:
           packages:
             - g++-mingw-w64-x86-64
+    - os: linux
+      env: PROFILE=mingwaarch64
+      addons:
+        apt:
+          packages:
+            - clang
     - os: linux
       env: PROFILE=armhf
       addons:

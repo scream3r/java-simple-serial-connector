@@ -1,5 +1,28 @@
 set(CMAKE_SYSTEM_NAME Windows)
-set(TOOLCHAIN_LOCATION "$ENV{HOME}/llvm-mingw/bin")
+
+# URL for llvm-mingw
+set(URL "https://github.com/mstorsjo/llvm-mingw/releases/download/20201020/llvm-mingw-20201020-msvcrt-ubuntu-18.04.tar.xz")
+set(SHA256 "96e94e469665ee5632fff32a19b589ae1698859189d85615f3062b1544510b75")
+get_filename_component(ARCHIVE_NAME "${URL}" NAME)
+set(ARCHIVE "${CMAKE_BINARY_DIR}/llvm-mingw/${ARCHIVE_NAME}")
+
+# Try to predict the subdirectory name from the file name
+string(REPLACE ".tar.xz" "" SUBDIR "${ARCHIVE_NAME}")
+
+# Prevent extract process from running more than once
+if(NOT TOOLCHAIN_LOCATION)
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/llvm-mingw/${SUBDIR}")
+    if(NOT EXISTS "${ARCHIVE}")
+      file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/llvm-mingw")
+      message(STATUS "Downloading ${URL} to ${ARCHIVE}...")
+      file(DOWNLOAD ${URL} ${ARCHIVE} TIMEOUT 60 EXPECTED_HASH SHA256=${SHA256})
+    endif()
+    message(STATUS "Extracting ${ARCHIVE} to ${CMAKE_BINARY_DIR}/llvm-mingw/${SUBDIR}/...")
+    file(ARCHIVE_EXTRACT INPUT "${ARCHIVE}" DESTINATION "${CMAKE_BINARY_DIR}/llvm-mingw")
+  endif()
+endif()
+
+set(TOOLCHAIN_LOCATION "${CMAKE_BINARY_DIR}/llvm-mingw/${SUBDIR}/bin")
 set(TOOLCHAIN_PREFIX "${TOOLCHAIN_LOCATION}/aarch64-w64-mingw32")
 set(CMAKE_C_COMPILER "${TOOLCHAIN_PREFIX}-gcc")
 set(CMAKE_CXX_COMPILER "${TOOLCHAIN_PREFIX}-g++")

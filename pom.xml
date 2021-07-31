@@ -42,25 +42,19 @@
 
     <!-- custom directories and file paths a-z -->
     <cmake.generated.directory>${project.build.directory}/cmake</cmake.generated.directory>
+    <ant.properties.file>${project.build.directory}/props.properties</ant.properties.file>
+    <ant.project.basedir>${project.basedir}</ant.project.basedir>
 
     <!-- profile-dependant flags a-z -->
-    <cmake.compile.skip>false</cmake.compile.skip>
-    <cmake.build.args></cmake.build.args>
-    <cmake.generator.gccarch>IGNORE</cmake.generator.gccarch>
-    <cmake.generator.arg></cmake.generator.arg>
-    <cmake.generator.nativelibdir></cmake.generator.nativelibdir>
-    <cmake.generator.msvcplatform></cmake.generator.msvcplatform>
-    <cmake.generator.osxarchitectures></cmake.generator.osxarchitectures>
-    <cmake.generator.skip>false</cmake.generator.skip>
-    <cmake.toolchain.file></cmake.toolchain.file>
+    <cmake.build.skip>false</cmake.build.skip>
+    <cmake.generate.skip>false</cmake.generate.skip>
     <javah.skip>false</javah.skip>
     <jar.dependencies.skip>true</jar.dependencies.skip>
-    <maven.assembly.id>${os.detected.name}-${os.detected.arch}-${os.detected.bitness}</maven.assembly.id>
 
     <!-- dependency versions a-z -->
     <dependency.junit.version>4.12</dependency.junit.version>
     <dependency.logback.version>1.2.3</dependency.logback.version>
-    <dependency.nativelibloader.version>2.3.6</dependency.nativelibloader.version>
+    <dependency.nativelibloader.version>2.3.5</dependency.nativelibloader.version>
 
     <!-- plugin versions a-z -->
     <plugin.animalsniffer.version>1.17</plugin.animalsniffer.version>
@@ -192,91 +186,49 @@
         <executions>
 
           <execution>
+            <id>gather-props</id>
+            <phase>validate</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <target>
+                <ant dir="ant"/>
+                <property file="${ant.properties.file}" description="read props from ant"/>
+              </target>
+              <exportAntProperties>true</exportAntProperties>
+            </configuration>
+          </execution>
+
+          <execution>
             <id>cmake-generate</id>
             <goals><goal>run</goal></goals>
             <phase>generate-sources</phase>
             <configuration>
-              <skip>${cmake.generator.skip}</skip>
-              <target name="cmake-generate">
-                <mkdir dir="${cmake.generated.directory}"/>
-                <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
-                  <arg line="${project.basedir}"/>
-                  <!-- Set the native lib output directory or leave blank to let CMake calculate -->
-                  <arg line="-DNATIVE_LIB_DIR=&quot;${cmake.generator.nativelibdir}&quot;"/>
-                  <!-- Pass-in maven's JAVA_HOME, helps resolve jni.h -->
-                  <arg line="-DJAVA_HOME=&quot;${java.home}&quot;"/>
-                  <!-- Final generator argument should be blank or one of:
-                       -DCMAKE_GENERATOR_PLATFORM=...
-                       -DCMAKE_TOOLCHAIN_FILE=...
-                       -DCMAKE_OSX_ARCHITECTURE=...
-                  -->
-                  <arg line="${cmake.generator.arg}"/>
-                </exec>
+              <skip>${cmake.generate.skip}</skip>
+              <target>
+                <ant dir="ant" target="cmake-generate"/>
               </target>
             </configuration>
           </execution>
 
           <execution>
-            <id>cmake-compile</id>
+            <id>cmake-build</id>
             <goals><goal>run</goal></goals>
             <phase>compile</phase>
             <configuration>
-              <skip>${cmake.compile.skip}</skip>
-              <target name="cmake-build">
-                <!-- copy header jdk<=8 -->
-                <copy todir="${cmake.generated.directory}" flatten="true" overwrite="true" verbose="true" failonerror="false" quiet="true">
-                  <fileset dir="${project.build.directory}/nar/" includes="**/*.h"/>
-                </copy>
-                <exec executable="cmake" dir="${cmake.generated.directory}" failonerror="true">
-                  <arg line="--build"/>
-                  <arg line="."/>
-                  <arg line="${cmake.build.args}"/>
-                </exec>
+              <skip>${cmake.build.skip}</skip>
+              <target>
+                <ant dir="ant" target="cmake-build"/>
               </target>
             </configuration>
           </execution>
 
           <execution>
-            <id>maven-test-helper</id>
-            <phase>compile</phase>
+            <id>show-file-info</id>
+            <phase>install</phase>
             <goals><goal>run</goal></goals>
             <configuration>
-              <exportAntProperties>true</exportAntProperties>
-              <target name="maven-test-helper">
-                <!-- Calculate the target system -->
-                <property name="maven.host.system" value="${os.arch} [${os.name}]"/>
-                <condition property="maven.target.system" value="${maven.test.skip.compare}" else="${os.arch} [${os.name}]">
-                  <isset property="maven.test.skip.compare"/>
-                </condition>
-
-                <!-- Summarize host/target -->
-                <echo level="info">Tests will run only if the TARGET and HOST match:${line.separator}${line.separator}</echo>
-                <echo level="info">TARGET:  ${maven.target.system}</echo>
-                <echo level="info">HOST:    ${maven.host.system}</echo>
-                <echo level="info"/>
-
-                <!-- Determine if tests should run -->
-                <condition property="maven.test.skip" value="true">
-                  <and>
-                    <!-- Honor value if already set -->
-                    <not>
-                      <isset property="maven.test.skip"/>
-                    </not>
-                    <!-- Make sure we have a value to compare
-                    <isset property="maven.test.skip.compare"/> -->
-                    <!-- Assume unit tests are impossible if host and target systems are mismatched -->
-                    <not>
-                      <equals arg1="${maven.host.system}" arg2="${maven.target.system}"/>
-                    </not>
-                  </and>
-                </condition>
-
-                <!-- Negate result for human readability -->
-                <condition property="maven.test.message" value="Tests will NOT run" else="Tests WILL run">
-                  <equals arg1="${maven.test.skip}" arg2="true"/>
-                </condition>
-                <echo level="info">===== ${maven.test.message} =====</echo>
-                <echo level="info"/>
+              <target>
+                <ant dir="ant" target="show-file-info"/>
               </target>
             </configuration>
           </execution>
@@ -336,7 +288,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <skipAssembly>${cmake.generator.skip}</skipAssembly>
+              <skipAssembly>${cmake.generate.skip}</skipAssembly>
               <descriptors>
                 <descriptor>${project.basedir}/src/assembly/one-off-jar.xml</descriptor>
               </descriptors>
@@ -451,8 +403,8 @@
       <properties>
         <javah.skip>true</javah.skip>
         <maven.test.skip>true</maven.test.skip>
-        <cmake.generator.skip>true</cmake.generator.skip>
-        <cmake.compile.skip>true</cmake.compile.skip>
+        <cmake.build.skip>true</cmake.build.skip>
+        <cmake.generate.skip>true</cmake.generate.skip>
       </properties>
 
      <build>
@@ -493,254 +445,101 @@
       </properties>
     </profile>
 
-    <!-- Set os.detected.arch; may be overridden lower -->
-    <profile>
-      <id>aarch64_detected</id>
-      <activation>
-        <os>
-          <arch>aarch64</arch>
-        </os>
-      </activation>
-      <properties>
-        <os.detected.arch>aarch_64</os.detected.arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>x86_64_detected</id>
-      <activation>
-        <os>
-          <arch>amd64</arch>
-        </os>
-      </activation>
-      <properties>
-        <os.detected.arch>x86_64</os.detected.arch>
-      </properties>
-    </profile>
-    <profile>
-      <id>x86_detected</id>
-      <activation>
-        <os>
-          <arch>x86</arch>
-        </os>
-      </activation>
-      <properties>
-        <os.detected.arch>x86_32</os.detected.arch>
-      </properties>
-    </profile>
-
-    <!-- cmake generic arm64 profile (all platforms) -->
+    <!-- Cross compile for aarch64 -->
     <profile>
       <id>aarch64</id>
-      <activation>
-        <property>
-          <name>os.detected.arch</name>
-          <value>aarch_64</value>
-        </property>
-      </activation>
       <properties>
-        <os.detected.arch>aarch_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
-        <cmake.generator.nativelibdir>${os.detected.name}_arm64</cmake.generator.nativelibdir>
-        <!-- msvc only -->
-        <cmake.generator.msvcplatform>ARM64</cmake.generator.msvcplatform>
-        <!-- macos only -->
-        <cmake.generator.osxarchitectures>arm64</cmake.generator.osxarchitectures>
-        <!-- used to calculate if java is running natively -->
-        <maven.test.skip.compare>aarch64 [${os.name}]</maven.test.skip.compare>
+        <os.target.arch>aarch_64</os.target.arch>
       </properties>
     </profile>
 
-    <!-- cmake generic x86_64 profile (all platforms) -->
+    <!-- Cross compile for x86_64 -->
     <profile>
       <id>x86_64</id>
-      <activation>
-        <property>
-          <name>os.detected.arch</name>
-          <value>x86_64</value>
-        </property>
-      </activation>
       <properties>
-        <os.detected.arch>x86_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
-        <cmake.generator.nativelibdir>${os.detected.name}_64</cmake.generator.nativelibdir>
-        <!-- msvc only -->
-        <cmake.generator.msvcplatform>x64</cmake.generator.msvcplatform>
-        <!-- macos only -->
-        <cmake.generator.osxarchitectures>x86_64</cmake.generator.osxarchitectures>
-        <!-- linux only -->
-        <cmake.generator.gccarch>M64</cmake.generator.gccarch>
-        <!-- used to calculate if java is running natively -->
-        <maven.test.skip.compare>amd64 [${os.name}]</maven.test.skip.compare>
+        <os.target.arch>x86_64</os.target.arch>
       </properties>
     </profile>
 
-    <!-- cmake generic x86 profile (all platforms) -->
+    <!-- Cross compile for x86 -->
     <profile>
       <id>x86</id>
-      <activation>
-        <property>
-          <name>os.detected.arch</name>
-          <value>x86_32</value>
-        </property>
-      </activation>
       <properties>
-        <os.detected.arch>x86_32</os.detected.arch>
-        <os.detected.bitness>32</os.detected.bitness>
-        <cmake.generator.nativelibdir>${os.detected.name}_32</cmake.generator.nativelibdir>
-        <!-- msvc only -->
-        <cmake.generator.msvcplatform>Win32</cmake.generator.msvcplatform>
-        <!-- macos only -->
-        <cmake.generator.osxarchitectures>x86_64</cmake.generator.osxarchitectures>
-        <!-- linux only -->
-        <cmake.generator.gccarchitecture>M32</cmake.generator.gccarchitecture>
-        <!-- used to calculate if java is running natively -->
-        <maven.test.skip.compare>x86 [${os.name}]</maven.test.skip.compare>
+        <os.target.arch>x86_32</os.target.arch>
       </properties>
     </profile>
 
-    <!-- cmake msvc profile, must occur after generic profile above -->
-    <profile>
-      <id>msvc</id>
-      <activation>
-        <os>
-          <family>windows</family>
-        </os>
-      </activation>
-      <properties>
-        <cmake.generator.arg>-DCMAKE_GENERATOR_PLATFORM=${cmake.generator.msvcplatform}</cmake.generator.arg>
-        <!-- Release is needed on Windows per https://stackoverflow.com/a/20423820/3196753 -->
-        <cmake.build.args>--config Release</cmake.build.args>
-      </properties>
-    </profile>
-
-    <!-- cmake linux profile, must occur after generic profile above -->
-    <profile>
-      <id>linux</id>
-      <activation>
-        <os>
-          <!-- warning, "unix" will match "macos" too -->
-          <family>unix</family>
-        </os>
-      </activation>
-      <properties>
-        <!-- Should be one of:
-             FORCE_M32
-             FORCE_M64
-        -->
-        <cmake.generator.arg>"-DFORCE_${cmake.generator.gccarch}=True"</cmake.generator.arg>
-      </properties>
-    </profile>
-
-    <!-- cmake macos profile, must occur after generic profile above -->
-    <profile>
-      <id>macos</id>
-      <activation>
-        <os>
-          <family>mac</family>
-        </os>
-      </activation>
-      <properties>
-        <cmake.generator.arg>-DCMAKE_OSX_ARCHITECTURES=${cmake.generator.osxarchitectures}</cmake.generator.arg>
-      </properties>
-    </profile>
-
-    <!-- cmake mingw32 profile, must occur after os profiles above -->
+    <!-- Cross compile for win32 using mingw -->
     <profile>
       <id>mingw32</id>
       <properties>
-        <!-- override os-maven-plugin values -->
-        <os.detected.name>windows</os.detected.name>
-        <os.detected.arch>x86_32</os.detected.arch>
-        <os.detected.bitness>32</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
-        <cmake.generator.nativelibdir>${os.detected.name}_${os.detected.bitness}</cmake.generator.nativelibdir>
-        <!-- used to calculate if Java is running natively -->
-        <maven.test.skip.compare>x86 [Windows]</maven.test.skip.compare>
+        <os.target.toolchain>Mingw32</os.target.toolchain>
+
+        <os.target.name>windows</os.target.name>
+        <os.target.arch>x86_32</os.target.arch>
+        <os.target.bitness>32</os.target.bitness>
       </properties>
     </profile>
 
-    <!-- cmake mingw64 profile, must occur after os profiles above -->
+    <!-- Cross compile for win64 using mingw -->
     <profile>
       <id>mingw64</id>
       <properties>
-        <os.detected.name>windows</os.detected.name>
-        <os.detected.arch>x86_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Mingw${os.detected.bitness}.cmake"</cmake.generator.arg>
-        <cmake.generator.nativelibdir>${os.detected.name}_${os.detected.bitness}</cmake.generator.nativelibdir>
-        <!-- used to calculate if Java is running natively -->
-        <maven.test.skip.compare>amd64 [Windows]</maven.test.skip.compare>
+        <os.target.toolchain>Mingw64</os.target.toolchain>
+
+        <os.target.name>windows</os.target.name>
+        <os.target.arch>x86_64</os.target.arch>
+        <os.target.bitness>64</os.target.bitness>
       </properties>
     </profile>
 
-    <!-- cmake mingwaarch64 profile, must occur after os profiles above -->
+    <!-- Cross compile for win arm64 using mingw -->
     <profile>
       <id>mingwaarch64</id>
       <properties>
-        <os.detected.name>windows</os.detected.name>
-        <os.detected.arch>arm_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/MingwAarch64.cmake"</cmake.generator.arg>
-        <cmake.generator.nativelibdir>windows_arm64</cmake.generator.nativelibdir>
-        <!-- used to calculate if Java is running natively -->
-        <maven.test.skip.compare>aarch64 [Windows]</maven.test.skip.compare>
+        <os.target.toolchain>MingwAarch64</os.target.toolchain>
+
+        <os.target.name>windows</os.target.name>
+        <os.target.arch>aarch_64</os.target.arch>
+        <os.target.bitness>64</os.target.bitness>
       </properties>
     </profile>
 
-    <!-- cmake arm soft float profile, must occur after os profiles above -->
-    <profile>
-      <id>armsf</id>
-      <properties>
-        <os.detected.name>linux</os.detected.name>
-        <os.detected.arch>arm_32</os.detected.arch>
-        <os.detected.bitness>32</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Armsf.cmake"</cmake.generator.arg>
-        <cmake.generator.nativelibdir>${os.detected.name}_arm</cmake.generator.nativelibdir>
-        <!-- used to calculate if Java is running natively -->
-        <maven.test.skip.compare>armsf [Linux]</maven.test.skip.compare>
-      </properties>
-    </profile>
-
-    <!-- cmake arm hard float profile, must occur after os profiles above -->
-    <profile>
-      <id>armhf</id>
-      <properties>
-        <os.detected.name>linux</os.detected.name>
-        <os.detected.arch>arm_32</os.detected.arch>
-        <os.detected.bitness>32</os.detected.bitness>
-        <!-- TODO: namespace conflict with arm soft float library.  See also cmake's HAS_FPU -->
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Armhf.cmake"</cmake.generator.arg>
-        <cmake.generator.nativelibdir>${os.detected.name}_arm</cmake.generator.nativelibdir>
-        <!-- used to calculate if Java is running natively -->
-        <maven.test.skip.compare>armhf [Linux]</maven.test.skip.compare>
-      </properties>
-    </profile>
-
-    <!-- cmake powerpc profile, must occur after os profiles above -->
+    <!-- Cross compile for ppc64 -->
     <profile>
       <id>ppc64</id>
       <properties>
-        <os.detected.name>linux</os.detected.name>
-        <os.detected.arch>ppc_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Ppc64.cmake"</cmake.generator.arg>
-        <cmake.generator.nativelibdir>${os.detected.name}_ppc</cmake.generator.nativelibdir>
-        <!-- used to calculate if Java is running natively -->
-        <maven.test.skip.compare>ppc64 [Linux]</maven.test.skip.compare>
+        <os.target.toolchain>Ppc64</os.target.toolchain>
+
+        <os.target.name>linux</os.target.name>
+        <os.target.arch>ppc_64</os.target.arch>
+        <os.target.bitness>64</os.target.bitness>
       </properties>
     </profile>
 
-    <!-- cmake aarch64 linux profile, must occur after os profiles above -->
+    <!-- Cross compile for arm32hf (hardware floating point) -->
     <profile>
-      <id>linux-aarch64</id>
+      <id>armhf</id>
       <properties>
-        <os.detected.name>linux</os.detected.name>
-        <os.detected.arch>arm_64</os.detected.arch>
-        <os.detected.bitness>64</os.detected.bitness>
-        <cmake.generator.arg>-DCMAKE_TOOLCHAIN_FILE="${project.basedir}/toolchain/Aarch64.cmake"</cmake.generator.arg>
-        <cmake.generator.nativelibdir>${os.detected.name}_arm64</cmake.generator.nativelibdir>
-        <!-- used to calculate if Java is running natively -->
-        <maven.test.skip.compare>aarch64 [Linux]</maven.test.skip.compare>
+        <os.target.toolchain>Armhf</os.target.toolchain>
+
+        <os.target.name>linux</os.target.name>
+        <!-- TODO: namespace conflict with arm soft float library.  See also cmake's HAS_FPU -->
+        <os.target.arch>arm_32</os.target.arch>
+        <os.target.bitness>32</os.target.bitness>
+      </properties>
+    </profile>
+
+    <!-- Cross compile for arm32sf (software floating point) -->
+    <profile>
+      <id>armsf</id>
+      <properties>
+        <os.target.toolchain>Armsf</os.target.toolchain>
+
+        <os.target.name>linux</os.target.name>
+        <!-- TODO: namespace conflict with arm hard float library.  See also cmake's HAS_FPU -->
+        <os.target.arch>arm_32</os.target.arch>
+        <os.target.bitness>32</os.target.bitness>
       </properties>
     </profile>
 
