@@ -34,6 +34,7 @@
     <connection>scm:git:https://github.com/java-native/jssc.git</connection>
     <developerConnection>scm:git:git@github.com:java-native/jssc.git</developerConnection>
     <url>https://github.com/java-native/jssc</url>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
@@ -63,10 +64,13 @@
     <plugin.build-helper-maven-version>3.2.0</plugin.build-helper-maven-version>
     <plugin.compiler.version>3.8.0</plugin.compiler.version>
     <plugin.enforcer.version>3.0.0-M3</plugin.enforcer.version>
+    <plugin.gpg.version>3.0.1</plugin.gpg.version>
     <plugin.jar.version>3.1.1</plugin.jar.version>
     <plugin.javadoc.version>3.1.1</plugin.javadoc.version>
     <plugin.nar.version>3.6.0</plugin.nar.version>
+    <plugin.nexus-staging.version>1.6.7</plugin.nexus-staging.version>
     <plugin.osmaven.version>1.7.0</plugin.osmaven.version>
+    <plugin.release.version>3.0.0-M4</plugin.release.version>
     <plugin.signature.version>1.1</plugin.signature.version>
     <plugin.source.version>3.0.1</plugin.source.version>
     <plugin.surfire.version>3.0.0-M4</plugin.surfire.version>
@@ -447,7 +451,7 @@
              <execution>
                <id>attach-sources</id>
                <goals>
-                 <goal>jar</goal>
+                 <goal>jar-no-fork</goal>
                </goals>
              </execution>
            </executions>
@@ -572,6 +576,57 @@
         <os.target.arch>arm_32</os.target.arch>
         <os.target.bitness>32</os.target.bitness>
       </properties>
+    </profile>
+
+    <profile>
+      <id>maven-central-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${plugin.gpg.version}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <keyname>java-native</keyname>
+              <passphraseServerId>gpg.passphrase</passphraseServerId>
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>${plugin.release.version}</version>
+            <configuration>
+              <tagNameFormat>v@{project.version}</tagNameFormat>
+              <pushChanges>false</pushChanges>
+              <localCheckout>true</localCheckout>
+              <goals>deploy</goals>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>${plugin.nexus-staging.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
 
   </profiles>
