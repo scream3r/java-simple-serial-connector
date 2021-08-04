@@ -31,8 +31,6 @@
 #include <time.h>
 #include <errno.h>//-D_TS_ERRNO use for Solaris C++ compiler
 
-#include <sys/select.h>//since 2.5.0
-
 #ifdef __linux__
     #include <linux/serial.h>
 #endif
@@ -42,6 +40,18 @@
 #endif
 #ifdef __APPLE__
     #include <serial/ioss.h>//Needed for IOSSIOSPEED in Mac OS X (Non standard baudrate)
+#elif !defined(HAVE_POLL)
+    // Seems as poll has some portability issues on OsX (Search for "poll" in
+    // "https://cr.yp.to/docs/unixport.html"). So we only make use of poll on
+    // all platforms except "__APPLE__".
+    // If you want to force usage of 'poll', pass "-DHAVE_POLL=1" to gcc.
+    #define HAVE_POLL 1
+#endif
+
+#if HAVE_POLL == 0
+    #include <sys/select.h>
+#else
+    #include <poll.h>
 #endif
 
 #include <jni.h>
@@ -524,28 +534,90 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
     return result == bufferSize ? JNI_TRUE : JNI_FALSE;
 }
 
+/**
+ * Waits until 'read()' has something to tell for the specified filedescriptor.
+ */
+static void awaitReadReady(JNIEnv*env, jlong fd){
+#if HAVE_POLL == 0
+    // Alternative impl using 'select' as 'poll' isn't available (or broken).
+
+    //assert(fd < FD_SETSIZE); // <- Might help when hunting SEGFAULTs.
+    fd_set readFds;
+    while(true) {
+        FD_ZERO(&readFds);
+        FD_SET(fd, &readFds);
+        int result = select(fd + 1, &readFds, NULL, NULL, NULL);
+        if(result < 0){
+            // man select: On error, -1 is returned, and errno is set to indicate the error
+            // TODO: Maybe a candidate to raise a java exception. But won't do
+            //       yet for backward compatibility.
+            continue;
+        }
+        // Did wait successfully.
+        break;
+    }
+    FD_CLR(fd, &readFds);
+
+#else
+    // Default impl using 'poll'. This is more robust against fd>=1024 (eg
+    // SEGFAULT problems).
+
+    struct pollfd fds[1];
+    fds[0].fd = fd;
+    fds[0].events = POLLIN;
+    while(true){
+        int result = poll(fds, 1, -1);
+        if(result < 0){
+            // man poll: On error, -1 is returned, and errno is set to indicate the error.
+            // TODO: Maybe a candidate to raise a java exception. But won't do
+            //       yet for backward compatibility.
+            continue;
+        }
+        // Did wait successfully.
+        break;
+    }
+
+#endif
+}
+
 /* OK */
 /*
  * Reading data from the port
  *
- * Rewrited in 2.5.0 (using select() function for correct block reading in MacOS X)
+ * Rewritten to use poll() instead of select() to handle fd>=1024
  */
 JNIEXPORT jbyteArray JNICALL Java_jssc_SerialNativeInterface_readBytes
   (JNIEnv *env, jobject, jlong portHandle, jint byteCount){
-    fd_set read_fd_set;
+
+    // TODO: Errors should be communicated by raising java exceptions; Will break
+    //       backwards compatibility.
+
     jbyte *lpBuffer = new jbyte[byteCount];
+    jbyteArray returnArray = NULL;
     int byteRemains = byteCount;
+
     while(byteRemains > 0) {
-        FD_ZERO(&read_fd_set);
-        FD_SET(portHandle, &read_fd_set);
-        select(portHandle + 1, &read_fd_set, NULL, NULL, NULL);
-        int result = read(portHandle, lpBuffer + (byteCount - byteRemains), byteRemains);
-        if(result > 0){
+        int result = 0;
+
+        awaitReadReady(env, portHandle);
+
+        errno = 0;
+        result = read(portHandle, lpBuffer + (byteCount - byteRemains), byteRemains);
+        if (result < 0) {
+            // man read: On error, -1 is returned, and errno is set to indicate the error.
+            // TODO: May candidate for raising a java exception. See comment at begin of function.
+        }
+        else if (result == 0) {
+            // AFAIK this happens either on EOF or on EWOULDBLOCK (see 'man read').
+            // TODO: Is "just continue" really the right thing to do? I will keep it that
+            //       way because the old code did so and I don't know better.
+        }
+        else {
             byteRemains -= result;
         }
     }
-    FD_CLR(portHandle, &read_fd_set);
-    jbyteArray returnArray = env->NewByteArray(byteCount);
+
+    returnArray = env->NewByteArray(byteCount);
     env->SetByteArrayRegion(returnArray, 0, byteCount, lpBuffer);
     delete[] lpBuffer;
     return returnArray;
