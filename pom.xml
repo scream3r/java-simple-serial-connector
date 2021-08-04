@@ -338,6 +338,7 @@
             </goals>
             <configuration>
               <skipAssembly>${jar.dependencies.skip}</skipAssembly>
+              <appendAssemblyId>false</appendAssemblyId>
               <descriptorRefs>
                 <descriptorRef>jar-with-dependencies</descriptorRef>
               </descriptorRefs>
