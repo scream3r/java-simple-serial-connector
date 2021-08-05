@@ -37,43 +37,71 @@ public class SerialNativeInterface {
     private static final String libVersion = "2.9";
     private static final String libMinorSuffix = "1"; //since 0.9.0
 
+    /** Linux **/
     public static final int OS_LINUX = 0;
+    /** Windows **/
     public static final int OS_WINDOWS = 1;
+    /** Solaris **/
     public static final int OS_SOLARIS = 2;//since 0.9.0
+    /** MacOS **/
     public static final int OS_MAC_OS_X = 3;//since 0.9.0
-
-    private static int osType = -1;
+    /** Unknown **/
+    public static final int OS_UNKNOWN = -1;//since 0.9.0
 
     /**
+     * Port is busy
+     *
      * @since 2.3.0
      */
     public static final long ERR_PORT_BUSY = -1;
     /**
+     * Port is not found
+     *
      * @since 2.3.0
      */
     public static final long ERR_PORT_NOT_FOUND = -2;
     /**
+     * Insufficient permissions to access port
+     *
      * @since 2.3.0
      */
     public static final long ERR_PERMISSION_DENIED = -3;
     /**
+     * Serial port handle is incorrect
+     *
      * @since 2.3.0
      */
     public static final long ERR_INCORRECT_SERIAL_PORT = -4;
 
     /**
+     * Disable exclusive lock for serial port
+     *
+     * Usage:
+     * <code>System.setProperty("jssc_no_tiocexcl", "true");</code>
+     *
      * @since 2.6.0
      */
     public static final String PROPERTY_JSSC_NO_TIOCEXCL = "JSSC_NO_TIOCEXCL";
     /**
+     * Ignore bytes with framing error or parity error
+     *
+     * Usage:
+     * <code>System.setProperty("jssc_ignpar", "true");</code>
+     *
      * @since 2.6.0
      */
     public static final String PROPERTY_JSSC_IGNPAR = "JSSC_IGNPAR";
     /**
+     * Mark bytes with parity error or framing error
+     *
+     * Usage:
+     * <code>System.setProperty("jssc_iparmrk", "true");</code>
+     *
      * @since 2.6.0
      */
     public static final String PROPERTY_JSSC_PARMRK = "JSSC_PARMRK";
 
+    private static int osType;
     static {
         String osName = System.getProperty("os.name");
         if(osName.equals("Linux"))
@@ -84,6 +112,8 @@ public class SerialNativeInterface {
             osType = OS_SOLARIS;
         else if(osName.equals("Mac OS X") || osName.equals("Darwin"))
             osType = OS_MAC_OS_X;
+        else
+            osType = OS_UNKNOWN;
         try {
             /**
              * JSSC includes a small, platform-specific shared library and uses native-lib-loader for extraction.
@@ -105,7 +135,10 @@ public class SerialNativeInterface {
     public SerialNativeInterface() {}
 
     /**
-     * Get OS type (OS_LINUX || OS_WINDOWS || OS_SOLARIS)
+     * Get OS type
+     *
+     * @return <code>OS_LINUX</code>, <code>OS_WINDOWS</code>, <code>OS_SOLARIS</code>,<code>OS_MACOS</code>
+     * or <code>OS_UNKNOWN</code> if unknown.
      * 
      * @since 0.8
      */
@@ -114,7 +147,9 @@ public class SerialNativeInterface {
     }
 
     /**
-     * Get jSSC version. The version of library is <b>Base Version</b> + <b>Minor Suffix</b>
+     * Get library version
+     *
+     * @return Full library version in "major.minor.patch" format.
      *
      * @since 0.8
      */
@@ -123,27 +158,35 @@ public class SerialNativeInterface {
     }
 
     /**
-     * Get jSSC Base Version
+     * Get library base Version
+     *
+     * @return Library base version in "major.minor" format.   Was previously used for library versioning caching
+     * but is no longer used by the project.
      *
      * @since 0.9.0
      */
+    @Deprecated
     public static String getLibraryBaseVersion() {
         return libVersion;
     }
 
     /**
-     * Get jSSC minor suffix. For example in version 0.8.1 - <b>1</b> is a minor suffix
+     * Get library patch version
+     *
+     * @return Library patch version only (e.g. only "patch" from "major.minor.patch").  Was previously used for
+     * library versioning caching but is no longer used by the project.
      *
      * @since 0.9.0
      */
+    @Deprecated
     public static String getLibraryMinorSuffix() {
         return libMinorSuffix;
     }
 
     /**
-     * Get jSSC native library version
+     * Get native library version
      *
-     * @return native lib version (for jSSC-2.8.0 should be 2.8 for example)
+     * @return Full native library version in "major.minor.patch" format.
      *
      * @since 2.8.0
      */
@@ -293,7 +336,7 @@ public class SerialNativeInterface {
      *
      * @param handle handle of opened port
      *
-     * @return Mask of setted flow control mode
+     * @return Mask of set flow control mode
      *
      * @since 0.8
      */
@@ -320,7 +363,7 @@ public class SerialNativeInterface {
     public native int[] getLinesStatus(long handle);
 
     /**
-     * Send Break singnal for setted duration
+     * Send Break signal for set duration
      * 
      * @param handle handle of opened port
      * @param duration duration of Break signal

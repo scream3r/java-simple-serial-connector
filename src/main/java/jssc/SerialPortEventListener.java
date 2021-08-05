@@ -29,6 +29,10 @@ package jssc;
  * @author scream3r
  */
 public interface SerialPortEventListener {
-
-    public abstract void serialEvent(SerialPortEvent serialPortEvent);
+    /**
+     * Called when an event fires
+     *
+     * @param serialPortEvent <code>SerialPortEvent</code> object containing port, event type and event data
+     */
+    void serialEvent(SerialPortEvent serialPortEvent);
 }

@@ -700,7 +700,7 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getFlowControlMode
 
 /* OK */
 /*
- * Send break for setted duration
+ * Send break for set duration
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_sendBreak
   (JNIEnv *, jobject, jlong portHandle, jint duration){

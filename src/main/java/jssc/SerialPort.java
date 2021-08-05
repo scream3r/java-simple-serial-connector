@@ -31,6 +31,7 @@ import java.lang.reflect.Method;
  *
  * @author scream3r
  */
+@SuppressWarnings("unused")
 public class SerialPort {
 
     private final SerialNativeInterface serialInterface;
@@ -44,77 +45,128 @@ public class SerialPort {
     //since 2.2.0 ->
     private volatile Method methodErrorOccurred = null;
     //<- since 2.2.0
-    
+
+    /** Baud rate 110 symbols/second **/
     public static final int BAUDRATE_110 = 110;
+    /** Baud rate 300 symbols/second **/
     public static final int BAUDRATE_300 = 300;
+    /** Baud rate 600 symbols/second **/
     public static final int BAUDRATE_600 = 600;
+    /** Baud rate 1200 symbols/second **/
     public static final int BAUDRATE_1200 = 1200;
+    /** Baud rate 2400 symbols/second **/
     public static final int BAUDRATE_2400 = 2400;
+    /** Baud rate 4800 symbols/second **/
     public static final int BAUDRATE_4800 = 4800;
+    /** Baud rate 9600 symbols/second **/
     public static final int BAUDRATE_9600 = 9600;
+    /** Baud rate 14400 symbols/second **/
     public static final int BAUDRATE_14400 = 14400;
+    /** Baud rate 19200 symbols/second **/
     public static final int BAUDRATE_19200 = 19200;
+    /** Baud rate 38400 symbols/second **/
     public static final int BAUDRATE_38400 = 38400;
+    /** Baud rate 57600 symbols/second **/
     public static final int BAUDRATE_57600 = 57600;
+    /** Baud rate 115200 symbols/second **/
     public static final int BAUDRATE_115200 = 115200;
+    /** Baud rate 128000 symbols/second **/
     public static final int BAUDRATE_128000 = 128000;
+    /** Baud rate 256000 symbols/second **/
     public static final int BAUDRATE_256000 = 256000;
 
-
+    /** Five (5) data bits per byte **/
     public static final int DATABITS_5 = 5;
+    /** Six (6) data bits per byte **/
     public static final int DATABITS_6 = 6;
+    /** Seven (7) data bits per byte **/
     public static final int DATABITS_7 = 7;
+    /** Eight (8) data bits per byte **/
     public static final int DATABITS_8 = 8;
-    
 
+    /** One (1) stop bits per byte **/
     public static final int STOPBITS_1 = 1;
+    /** Two (2) stop bits per byte **/
     public static final int STOPBITS_2 = 2;
+    /** One and a half (1.5) stop bits per byte **/
     public static final int STOPBITS_1_5 = 3;
-    
 
+    /** Do not send a parity bit **/
     public static final int PARITY_NONE = 0;
+    /** Use a very basic checksum: Send an additional bit to report if odd number of data bits **/
     public static final int PARITY_ODD = 1;
+    /** Use a very basic checksum: Send an additional bit to report if even number of data bits **/
     public static final int PARITY_EVEN = 2;
+    /** Use a very basic checksum: Send a parity bit to indicate "mark signal" condition (rarely used) **/
     public static final int PARITY_MARK = 3;
+    /** Use a very basic checksum: Send a parity bit to indicate "space signal" condition (rarely used) **/
     public static final int PARITY_SPACE = 4;
-     
 
+
+    /** Receive "abort" status code **/
     public static final int PURGE_RXABORT = 0x0002;
+    /** Receive "clear" status code **/
     public static final int PURGE_RXCLEAR = 0x0008;
+    /** Transfer "abort" status code **/
     public static final int PURGE_TXABORT = 0x0001;
+    /** Transfer "clear" status code **/
     public static final int PURGE_TXCLEAR = 0x0004;
 
 
+    /** Receive character flag **/
     public static final int MASK_RXCHAR = 1;
+    /** Receive flag **/
     public static final int MASK_RXFLAG = 2;
+    /** Receive empty flag **/
     public static final int MASK_TXEMPTY = 4;
+    /** CTS (clear to send) mask **/
     public static final int MASK_CTS = 8;
+    /** DSR (data set to ready) flag **/
     public static final int MASK_DSR = 16;
+    /** RLSD (Receive Line Signal Detected) flag **/
     public static final int MASK_RLSD = 32;
+    /** Break (reset a communications line or change the operating mode) flag **/
     public static final int MASK_BREAK = 64;
+    /** Error flag **/
     public static final int MASK_ERR = 128;
-    public static final int MASK_RING = 256;
+    /** State of RING line (0 - OFF, 1 - ON) **/
+     public static final int MASK_RING = 256;
 
 
     //since 0.8 ->
+    /** Disable flow control **/
     public static final int FLOWCONTROL_NONE = 0;
+    /** Legacy hardware control: RTS/CTS (request to send/clear to send) flow control on input **/
     public static final int FLOWCONTROL_RTSCTS_IN = 1;
+    /** Legacy hardware control: RTS/CTS (request to send/clear to send) flow control on output **/
     public static final int FLOWCONTROL_RTSCTS_OUT = 2;
+    /** Software flow control: XON/XOFF flow control on input **/
     public static final int FLOWCONTROL_XONXOFF_IN = 4;
+    /** Software flow control: XON/XOFF flow control on output **/
     public static final int FLOWCONTROL_XONXOFF_OUT = 8;
     //<- since 0.8
 
     //since 0.8 ->
+    /** Indicates faulty data or frame **/
     public static final int ERROR_FRAME = 0x0008;
+    /** Overrun error; receiver hardware unable to handle receive data **/
     public static final int ERROR_OVERRUN = 0x0002;
+    /** Parity/check bit error **/
     public static final int ERROR_PARITY = 0x0004;
     //<- since 0.8
 
     //since 2.6.0 ->
+    /** Ignore bytes with framing error or parity error **/
     private static final int PARAMS_FLAG_IGNPAR = 1;
+    /** Mark bytes with parity error or framing error **/
     private static final int PARAMS_FLAG_PARMRK = 2;
     //<- since 2.6.0
 
+    /**
+     * Construct a serial port object with the specified <code>portName</code>
+     *
+     * @param portName Name of the port, e.g. <code>COM1</code>, <code>/dev/tty.FOO</code>, etc.
+     */
     public SerialPort(String portName) {
         this.portName = portName;
         serialInterface = new SerialNativeInterface();
@@ -146,7 +198,7 @@ public class SerialPort {
      *
      * @return If the operation is successfully completed, the method returns true
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public synchronized boolean openPort() throws SerialPortException {
         if(portOpened){
@@ -186,7 +238,7 @@ public class SerialPort {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public boolean setParams(int baudRate, int dataBits, int stopBits, int parity) throws SerialPortException {
         return setParams(baudRate, dataBits, stopBits, parity, true, true);
@@ -204,7 +256,7 @@ public class SerialPort {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -233,9 +285,11 @@ public class SerialPort {
      * parameter <b>"PURGE_RXCLEAR | PURGE_TXCLEAR"</b>.
      * <br><b>Note: </b>some devices or drivers may not support this function
      *
+     * @param flags One or more <code>SerialPort.PURGE_*</code> flag
+     *
      * @return If the operation is successfully completed, the method returns true, otherwise false. 
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public synchronized boolean purgePort(int flags) throws SerialPortException {
         checkPortOpened("purgePort()");
@@ -255,10 +309,12 @@ public class SerialPort {
      * Sent parameter "mask" is additive value, so addition of flags is allowed.
      * For example if messages about data receipt and CTS and DSR status changing
      * shall be received, it is required to set the mask - <b>"MASK_RXCHAR | MASK_CTS | MASK_DSR"</b>
+     *
+     * @param mask One or more <code>SerialPort.MASK_*</code> value
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public synchronized boolean setEventsMask(int mask) throws SerialPortException {
         checkPortOpened("setEventsMask()");
@@ -292,7 +348,7 @@ public class SerialPort {
      * 
      * @return Method returns events mask as int type variable. This variable is an additive value
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public int getEventsMask() throws SerialPortException {
         checkPortOpened("getEventsMask()");
@@ -316,9 +372,11 @@ public class SerialPort {
     /**
      * Change RTS line state. Set "true" for switching ON and "false" for switching OFF RTS line
      *
+     * @param enabled on/off flag
+     *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public boolean setRTS(boolean enabled) throws SerialPortException {
         checkPortOpened("setRTS()");
@@ -328,9 +386,11 @@ public class SerialPort {
     /**
      * Change DTR line state. Set "true" for switching ON and "false" for switching OFF DTR line
      *
+     * @param enabled on/off flag
+     *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public boolean setDTR(boolean enabled) throws SerialPortException {
         checkPortOpened("setDTR()");
@@ -340,9 +400,11 @@ public class SerialPort {
     /**
      * Write byte array to port
      *
+     * @param buffer <code>byte[]</code> array to write
+     *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      * 
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public boolean writeBytes(byte[] buffer) throws SerialPortException {
         checkPortOpened("writeBytes()");
@@ -352,9 +414,11 @@ public class SerialPort {
     /**
      * Write single byte to port
      *
+     * @param singleByte single <code>byte</code> value to write
+     *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -366,9 +430,11 @@ public class SerialPort {
     /**
      * Write String to port
      *
+     * @param string <code>String</code> value to write
+     *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -380,9 +446,12 @@ public class SerialPort {
     /**
      * Write String to port
      *
+     * @param string <code>String</code> value to write
+     * @param charsetName valid <code>Charset</code> name, e.g. <code>"UTF-8"</code>
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
+     * @throws UnsupportedEncodingException if encoding exception occurred
      *
      * @since 2.8.0
      */
@@ -394,9 +463,11 @@ public class SerialPort {
     /**
      * Write int value (in range from 0 to 255 (0x00 - 0xFF)) to port
      *
+     * @param singleInt single <code>int</code> value to write
+     *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -408,9 +479,11 @@ public class SerialPort {
     /**
      * Write int array (in range from 0 to 255 (0x00 - 0xFF)) to port
      *
+     * @param buffer <code>int[]</code> array to write
+     *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -430,7 +503,7 @@ public class SerialPort {
      * 
      * @return byte array with "byteCount" length
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public byte[] readBytes(int byteCount) throws SerialPortException {
         checkPortOpened("readBytes()");
@@ -444,7 +517,7 @@ public class SerialPort {
      *
      * @return byte array with "byteCount" length converted to String
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -460,7 +533,7 @@ public class SerialPort {
      *
      * @return byte array with "byteCount" length converted to Hexadecimal String
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -470,13 +543,14 @@ public class SerialPort {
     }
 
     /**
-     * Read Hex string from port with setted separator (example if separator is "::": FF::0A::FF)
+     * Read Hex string from port with set separator (example if separator is "::": FF::0A::FF)
      *
      * @param byteCount count of bytes for reading
+     * @param separator the hex string separator, e.g. "::", etc
      *
      * @return byte array with "byteCount" length converted to Hexadecimal String
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -502,7 +576,7 @@ public class SerialPort {
      * 
      * @return String array with "byteCount" length and Hexadecimal String values
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -527,7 +601,7 @@ public class SerialPort {
      *
      * @return int array with values in range from 0 to 255
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -557,7 +631,7 @@ public class SerialPort {
             }
         }
         if(timeIsOut){
-            throw new SerialPortTimeoutException(portName, methodName, timeout);
+            throw new SerialPortTimeoutException(this, methodName, timeout);
         }
     }
 
@@ -569,8 +643,8 @@ public class SerialPort {
      *
      * @return byte array with "byteCount" length
      *
-     * @throws SerialPortException
-     * @throws SerialPortTimeoutException
+     * @throws SerialPortException if exception occurred
+     * @throws SerialPortTimeoutException if timeout exception occurred
      *
      * @since 2.0
      */
@@ -588,8 +662,8 @@ public class SerialPort {
      *
      * @return byte array with "byteCount" length converted to String
      *
-     * @throws SerialPortException
-     * @throws SerialPortTimeoutException
+     * @throws SerialPortException if exception occurred
+     * @throws SerialPortTimeoutException if timeout exception occurred
      *
      * @since 2.0
      */
@@ -607,8 +681,8 @@ public class SerialPort {
      *
      * @return byte array with "byteCount" length converted to Hexadecimal String
      *
-     * @throws SerialPortException
-     * @throws SerialPortTimeoutException
+     * @throws SerialPortException if exception occurred
+     * @throws SerialPortTimeoutException if timeout exception occurred
      *
      * @since 2.0
      */
@@ -619,15 +693,16 @@ public class SerialPort {
     }
 
     /**
-     * Read Hex string from port with setted separator (example if separator is "::": FF::0A::FF)
+     * Read Hex string from port with set separator (example if separator is "::": FF::0A::FF)
      *
      * @param byteCount count of bytes for reading
+     * @param separator the hex string separator, e.g. "::", etc
      * @param timeout timeout in milliseconds
      *
      * @return byte array with "byteCount" length converted to Hexadecimal String
      *
-     * @throws SerialPortException
-     * @throws SerialPortTimeoutException
+     * @throws SerialPortException if exception occurred
+     * @throws SerialPortTimeoutException if timeout exception occurred
      *
      * @since 2.0
      */
@@ -645,8 +720,8 @@ public class SerialPort {
      *
      * @return String array with "byteCount" length and Hexadecimal String values
      *
-     * @throws SerialPortException
-     * @throws SerialPortTimeoutException
+     * @throws SerialPortException if exception occurred
+     * @throws SerialPortTimeoutException if timeout exception occurred
      *
      * @since 2.0
      */
@@ -664,8 +739,8 @@ public class SerialPort {
      *
      * @return int array with values in range from 0 to 255
      *
-     * @throws SerialPortException
-     * @throws SerialPortTimeoutException
+     * @throws SerialPortException if exception occurred
+     * @throws SerialPortTimeoutException if timeout exception occurred
      *
      * @since 2.0
      */
@@ -680,7 +755,7 @@ public class SerialPort {
      *
      * @return If input buffer is empty <b>null</b> will be returned, else byte array with all data from port
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -698,7 +773,7 @@ public class SerialPort {
      *
      * @return If input buffer is empty <b>null</b> will be returned, else byte array with all data from port converted to String
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -716,7 +791,7 @@ public class SerialPort {
      *
      * @return If input buffer is empty <b>null</b> will be returned, else byte array with all data from port converted to Hex String
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -730,11 +805,13 @@ public class SerialPort {
     }
 
     /**
-     * Read all available bytes from port like a Hex String with setted separator
+     * Read all available bytes from port like a Hex String with set separator
+     *
+     * @param separator the hex string separator, e.g. "::", etc
      *
      * @return If input buffer is empty <b>null</b> will be returned, else byte array with all data from port converted to Hex String
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -752,7 +829,7 @@ public class SerialPort {
      *
      * @return If input buffer is empty <b>null</b> will be returned, else byte array with all data from port converted to Hex String array
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -770,7 +847,7 @@ public class SerialPort {
      *
      * @return If input buffer is empty <b>null</b> will be returned, else byte array with all data from port converted to int array
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -788,7 +865,7 @@ public class SerialPort {
      *
      * @return Count of bytes in input buffer or -1 if error occured
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -802,7 +879,7 @@ public class SerialPort {
      *
      * @return Count of bytes in output buffer or -1 if error occured
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -815,9 +892,11 @@ public class SerialPort {
      * Set flow control mode. For required mode use variables with prefix <b>"FLOWCONTROL_"</b>.
      * Example of hardware flow control mode(RTS/CTS): setFlowControlMode(FLOWCONTROL_RTSCTS_IN | FLOWCONTROL_RTSCTS_OUT);
      *
+     * @param mask mask of flow control mode
+     *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -829,9 +908,9 @@ public class SerialPort {
     /**
      * Get flow control mode
      *
-     * @return Mask of setted flow control mode
+     * @return Mask of set flow control mode
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -841,13 +920,13 @@ public class SerialPort {
     }
 
     /**
-     * Send Break singnal for setted duration
+     * Send Break singnal for set duration
      *
      * @param duration duration of Break signal
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      * 
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      *
      * @since 0.8
      */
@@ -865,7 +944,7 @@ public class SerialPort {
      *
      * @param methodName method name
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     private void checkPortOpened(String methodName) throws SerialPortException {
         if(!portOpened){
@@ -882,7 +961,7 @@ public class SerialPort {
      * <br><b>element 2</b> - <b>RING</b> line state
      * <br><b>element 3</b> - <b>RLSD</b> line state
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public int[] getLinesStatus() throws SerialPortException {
         checkPortOpened("getLinesStatus()");
@@ -894,7 +973,7 @@ public class SerialPort {
      *
      * @return If line is active, method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public boolean isCTS() throws SerialPortException {
         checkPortOpened("isCTS()");
@@ -911,7 +990,7 @@ public class SerialPort {
      *
      * @return If line is active, method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public boolean isDSR() throws SerialPortException {
         checkPortOpened("isDSR()");
@@ -928,7 +1007,7 @@ public class SerialPort {
      * 
      * @return If line is active, method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public boolean isRING() throws SerialPortException {
         checkPortOpened("isRING()");
@@ -945,7 +1024,7 @@ public class SerialPort {
      * 
      * @return If line is active, method returns true, otherwise false
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public boolean isRLSD() throws SerialPortException {
         checkPortOpened("isRLSD()");
@@ -963,7 +1042,9 @@ public class SerialPort {
      * be in charge for handling of occurred events. This method will independently
      * set the mask in <b>"MASK_RXCHAR"</b> state if it was not set beforehand
      *
-     * @throws SerialPortException
+     * @param listener Event Listener of type <code>SerialPortListener</code>
+     *
+     * @throws SerialPortException if exception occurred
      */
     public void addEventListener(SerialPortEventListener listener) throws SerialPortException {
         addEventListener(listener, MASK_RXCHAR, false);
@@ -975,9 +1056,12 @@ public class SerialPort {
      * charge for handling of occurred events. Also events mask shall be sent to
      * this method, to do it use variables with prefix <b>"MASK_"</b> for example <b>"MASK_RXCHAR"</b>
      *
+     * @param listener Event Listener of type <code>SerialPortListener</code>
+     * @param mask <code>SerialPort.MASK_*</code> representing the event mask to listen upon
+     *
      * @see #setEventsMask(int) setEventsMask(int mask)
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public void addEventListener(SerialPortEventListener listener, int mask) throws SerialPortException {
         addEventListener(listener, mask, true);
@@ -988,14 +1072,18 @@ public class SerialPort {
      * to the method. This object shall be properly described, as it will be in
      * charge for handling of occurred events. Also events mask shall be sent to
      * this method, to do it use variables with prefix <b>"MASK_"</b> for example <b>"MASK_RXCHAR"</b>. If
-     * <b>overwriteMask == true</b> and mask has been already assigned it value will be rewrited by <b>mask</b>
+     * <b>overwriteMask == true</b> and mask has been already assigned it value will be rewritten by <b>mask</b>
      * value, if <b>overwriteMask == false</b> and mask has been already assigned the new <b>mask</b> value will be ignored,
      * if there is no assigned mask to this serial port the <b>mask</b> value will be used for setting it up in spite of
      * <b>overwriteMask</b> value
      *
+     * @param listener Event Listener of type <code>SerialPortListener</code>
+     * @param mask <code>SerialPort.MASK_*</code> representing the event mask to listen upon
+     * @param overwriteMask overwrite <code>mask</code> if already assigned
+     *
      * @see #setEventsMask(int) setEventsMask(int mask)
      *
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     private synchronized void addEventListener(SerialPortEventListener listener, int mask, boolean overwriteMask) throws SerialPortException {
         checkPortOpened("addEventListener()");
@@ -1047,7 +1135,7 @@ public class SerialPort {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      * 
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public synchronized boolean removeEventListener() throws SerialPortException {
         checkPortOpened("removeEventListener()");
@@ -1076,7 +1164,7 @@ public class SerialPort {
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      * 
-     * @throws SerialPortException
+     * @throws SerialPortException if exception occurred
      */
     public synchronized boolean closePort() throws SerialPortException {
         checkPortOpened("closePort()");

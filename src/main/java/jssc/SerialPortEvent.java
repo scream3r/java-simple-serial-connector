@@ -38,22 +38,67 @@ public class SerialPortEvent {
     @Deprecated
     private String portName;
 
-    public static final int RXCHAR = 1;
-    public static final int RXFLAG = 2;
-    public static final int TXEMPTY = 4;
-    public static final int CTS = 8;
-    public static final int DSR = 16;
-    public static final int RLSD = 32;
-    public static final int BREAK = 64;
-    public static final int ERR = 128;
-    public static final int RING = 256;
+    /** Deprecated: Use <code>SerialPort.MASK_RXCHAR</code> instead **/
+    @Deprecated
+    public static final int RXCHAR = SerialPort.MASK_RXCHAR;
 
+    /** Deprecated: Use <code>SerialPort.MASK_RXFLAG</code> instead **/
+    @Deprecated
+    public static final int RXFLAG = SerialPort.MASK_RXFLAG;
+
+    /** Deprecated: Use <code>SerialPort.MASK_TXEMPTY</code> instead **/
+    @Deprecated
+    public static final int TXEMPTY = SerialPort.MASK_TXEMPTY;
+
+    /** Deprecated: Use <code>SerialPort.MASK_CTS</code> instead **/
+    @Deprecated
+    public static final int CTS = SerialPort.MASK_CTS;
+
+    /** Deprecated: Use <code>SerialPort.MASK_DSR</code> instead **/
+    @Deprecated
+    public static final int DSR = SerialPort.MASK_DSR;
+
+    /** Deprecated: Use <code>SerialPort.MASK_RLSD</code> instead **/
+    @Deprecated
+    public static final int RLSD = SerialPort.MASK_RLSD;
+
+    /** Deprecated: Use <code>SerialPort.MASK_BREAK</code> instead **/
+    @Deprecated
+    public static final int BREAK = SerialPort.MASK_BREAK;
+
+    /** Deprecated: Use <code>SerialPort.MASK_ERR</code> instead **/
+    @Deprecated
+    public static final int ERR = SerialPort.MASK_ERR;
+
+    /** Deprecated: Use <code>SerialPort.MASK_RING</code> instead **/
+    @Deprecated
+    public static final int RING = SerialPort.MASK_RING;
+
+    /**
+     * Constructs a SerialPortEvent representing a port, event type and event value.
+     *
+     * @param port <code>SerialPort</code> object which the event occurred
+     * @param eventType Can be any value from <code>SerialPort.MASK_*</code> or <code>LinuxEventThread.INTERRUPT_*</code>
+     * @param eventValue Event value which changes context depending on <code>getEventType()</code>
+     *
+     * @see #getEventType()
+     */
     public SerialPortEvent(SerialPort port, int eventType, int eventValue){
         this.port = port;
         this.eventType = eventType;
         this.eventValue = eventValue;
     }
 
+    /**
+     * Constructs a SerialPortEvent representing a port, event type and event value.
+     * Deprecated: Use <code>SerialPortEvent(SerialPort, int, int)</code> instead.
+     *
+     * @param portName port which the event occurred
+     * @param eventType Can be any value from <code>SerialPort.MASK_*</code> or <code>LinuxEventThread.INTERRUPT_*</code>
+     * @param eventValue Event value which changes context depending on <code>getEventType()</code>
+     *
+     * @see #SerialPortEvent(SerialPort, int, int)
+     */
     @Deprecated
     public SerialPortEvent(String portName, int eventType, int eventValue){
         this.portName = portName;
@@ -63,6 +108,8 @@ public class SerialPortEvent {
 
     /**
      * Getting the port that set off this event
+     *
+     * @return The <code>SerialPort</code> object the event occurred on
      */
     public SerialPort getPort(){
         return port;
@@ -70,6 +117,8 @@ public class SerialPortEvent {
 
     /**
      * Getting port name which sent the event
+     *
+     * @return The port name the event occurred on
      */
     @Deprecated
     public String getPortName() {
@@ -78,7 +127,10 @@ public class SerialPortEvent {
 
     /**
      * Getting event type
+     *
+     * @return The <code>SerialPort.MASK_*</code> event mask
      */
+    @SuppressWarnings("unused")
     public int getEventType() {
         return eventType;
     }
@@ -96,71 +148,97 @@ public class SerialPortEvent {
      * <br><b>BREAK</b> - 0
      * <br><b>RING</b> - state of RING line (0 - OFF, 1 - ON)
      * <br><b>ERR</b> - mask of errors
+     * @return Event value which changes context depending on <code>getEventType()</code> (see listing)
      */
+    @SuppressWarnings("unused")
     public int getEventValue() {
         return eventValue;
     }
 
     /**
-     * Method returns true if event of type <b>"RXCHAR"</b> is received and otherwise false
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_RXCHAR</code>
+     * @return true or false
      */
+    @SuppressWarnings("unused")
     public boolean isRXCHAR() {
-        return eventType == RXCHAR;
+        return eventType == SerialPort.MASK_RXCHAR;
     }
 
     /**
-     * Method returns true if event of type <b>"RXFLAG"</b> is received and otherwise false
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_RXFLAG</code>
+     * @return true or false
      */
+    @SuppressWarnings("unused")
     public boolean isRXFLAG() {
-        return eventType == RXFLAG;
+        return eventType == SerialPort.MASK_RXFLAG;
     }
 
     /**
-     * Method returns true if event of type <b>"TXEMPTY"</b> is received and otherwise false
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_TXEMPTY</code>
+     * @return true or false
      */
+    @SuppressWarnings("unused")
     public boolean isTXEMPTY() {
-        return eventType == TXEMPTY;
+        return eventType == SerialPort.MASK_TXEMPTY;
     }
 
     /**
-     * Method returns true if event of type <b>"CTS"</b> is received and otherwise false
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_CTS</code>
+     *
+     * @return true or false
      */
+    @SuppressWarnings("unused")
     public boolean isCTS() {
-        return eventType == CTS;
+        return eventType == SerialPort.MASK_CTS;
     }
 
     /**
-     * Method returns true if event of type <b>"DSR"</b> is received and otherwise false
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_DSR</code>
+     *
+     * @return true or false
      */
+    @SuppressWarnings("unused")
     public boolean isDSR() {
-        return eventType == DSR;
+        return eventType == SerialPort.MASK_DSR;
     }
 
     /**
-     * Method returns true if event of type <b>"RLSD"</b> is received and otherwise false
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_RLSD</code>
+     *
+     * @return true or false
      */
+    @SuppressWarnings("unused")
     public boolean isRLSD() {
-        return eventType == RLSD;
+        return eventType == SerialPort.MASK_RLSD;
     }
 
     /**
-     * Method returns true if event of type <b>"BREAK"</b> is received and otherwise false
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_RLSD</code>
+     *
+     * @return true or false
      */
+    @SuppressWarnings("unused")
     public boolean isBREAK() {
-        return eventType == BREAK;
+        return eventType == SerialPort.MASK_RLSD;
     }
 
     /**
-     * Method returns true if event of type <b>"ERR"</b> is received and otherwise false
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_ERR</code>
+     *
+     * @return true or false
      */
+    @SuppressWarnings("unused")
     public boolean isERR() {
-        return eventType == ERR;
+        return eventType == SerialPort.MASK_ERR;
     }
 
     /**
-     * Method returns true if event of type <b>"RING"</b> is received and otherwise false
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_RING</code>
+     *
+     * @return true or false
      */
+    @SuppressWarnings("unused")
     public boolean isRING() {
-        return eventType == RING;
+        return eventType == SerialPort.MASK_RING;
     }
 }

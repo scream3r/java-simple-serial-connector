@@ -136,7 +136,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
 
         if(SetCommState(hComm, dcb)){
 
-        	//since 2.1.0 -> previously setted timeouts by another application should be cleared
+        	//since 2.1.0 -> timeouts set previously by another application should be cleared
         	COMMTIMEOUTS *lpCommTimeouts = new COMMTIMEOUTS();
         	lpCommTimeouts->ReadIntervalTimeout = 0;
         	lpCommTimeouts->ReadTotalTimeoutConstant = 0;
@@ -392,7 +392,7 @@ JNIEXPORT jint JNICALL Java_jssc_SerialNativeInterface_getFlowControlMode
 }
 
 /*
- * Send break for setted duration
+ * Send break for set duration
  *
  * since 0.8
  */
