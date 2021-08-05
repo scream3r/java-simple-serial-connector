@@ -39,6 +39,12 @@ public class SerialPortList {
     private static final Pattern PORTNAMES_REGEXP;
     private static final String PORTNAMES_PATH;
 
+    /**
+     * Default constructor
+     * private: no constructor available
+     */
+    private SerialPortList() {}
+
     static {
         serialInterface = new SerialNativeInterface();
         switch (SerialNativeInterface.getOsType()) {

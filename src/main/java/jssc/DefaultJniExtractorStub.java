@@ -21,7 +21,7 @@ public class DefaultJniExtractorStub extends DefaultJniExtractor {
     /**
      * Default constructor
      */
-    public DefaultJniExtractorStub(Class libraryJarClass) throws IOException {
+    public DefaultJniExtractorStub(Class<?> libraryJarClass) throws IOException {
         super(libraryJarClass);
     }
 
@@ -33,7 +33,7 @@ public class DefaultJniExtractorStub extends DefaultJniExtractor {
      *  NativeLoader.loadLibrary("mylibrary");
      *  </code>
      */
-    public DefaultJniExtractorStub(Class libraryJarClass, String bootPath) throws IOException {
+    public DefaultJniExtractorStub(Class<?> libraryJarClass, String bootPath) throws IOException {
         this(libraryJarClass);
 
         if(bootPath != null) {

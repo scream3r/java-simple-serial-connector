@@ -99,6 +99,12 @@ public class SerialNativeInterface {
     }
 
     /**
+     * Default constructor
+     * TODO: This class is effectively static, why instantiate it?
+     */
+    public SerialNativeInterface() {}
+
+    /**
      * Get OS type (OS_LINUX || OS_WINDOWS || OS_SOLARIS)
      * 
      * @since 0.8

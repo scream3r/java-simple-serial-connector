@@ -1,4 +1,5 @@
+@SuppressWarnings({ "requires-automatic", "requires-transitive-automatic" })
 open module jssc {
-    requires org.scijava.nativelib;
+    requires transitive org.scijava.nativelib;
     exports jssc;
 }
