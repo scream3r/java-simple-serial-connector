@@ -85,6 +85,13 @@ public class SerialNativeInterface {
         else if(osName.equals("Mac OS X") || osName.equals("Darwin"))
             osType = OS_MAC_OS_X;
         try {
+            /**
+             * JSSC includes a small, platform-specific shared library and uses native-lib-loader for extraction.
+             * - First, native-lib-loader will attempt to load this library from the system library path.
+             * - Next, it will fallback to <code>jssc.boot.library.path</code>
+             * - Finally it will attempt to extract the library from from the jssc.jar file, and load it.
+             */
+            NativeLoader.setJniExtractor(new DefaultJniExtractorStub(null, System.getProperty("jssc.boot.library.path")));
             NativeLoader.loadLibrary("jssc");
         } catch (IOException ioException) {
             throw new UnsatisfiedLinkError("Could not load the jssc library: " + ioException.getMessage());

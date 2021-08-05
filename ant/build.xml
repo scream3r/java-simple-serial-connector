@@ -8,6 +8,7 @@
             <entry key="maven.nativelibdir.path" value="${maven.nativelibdir.path}"/>
             <entry key="maven.assembly.id" value="${maven.assembly.id}"/>
             <entry key="maven.test.skip" value="${maven.test.skip}"/>
+            <entry key="maven.exclude.tests" value="${maven.exclude.tests}"/>
         </propertyfile>
     </target>
 
@@ -191,6 +192,11 @@
                 <!-- Run tests if detected system matches target system -->
                 <equals arg1="${os.target.classifier}" arg2="${os.detected.classifier}"/>
             </and>
+        </condition>
+
+        <!-- Skip ManualBootLibraryPathTest test if we're not building a native lib -->
+        <condition property="maven.exclude.tests" value="**/ManualBootLibraryPathTest.java" else="">
+            <equals arg1="${cmake.build.skip}" arg2="true"/>
         </condition>
 
         <!-- Summarize host/target -->

@@ -68,7 +68,7 @@
     <plugin.osmaven.version>1.7.0</plugin.osmaven.version>
     <plugin.signature.version>1.1</plugin.signature.version>
     <plugin.source.version>3.0.1</plugin.source.version>
-    <plugin.surfire.version>3.0.0-M3</plugin.surfire.version>
+    <plugin.surfire.version>3.0.0-M4</plugin.surfire.version>
   </properties>
 
   <dependencies>
@@ -253,6 +253,12 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${plugin.surfire.version}</version>
+        <configuration>
+          <reuseForks>false</reuseForks>
+          <excludes>
+            <exclude>${maven.exclude.tests}</exclude>
+          </excludes>
+        </configuration>
       </plugin>
 
       <plugin>
