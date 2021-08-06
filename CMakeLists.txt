@@ -55,16 +55,14 @@ if(APPLE)
 endif()
 
 # Statically link gcc/c++
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	if(WIN32)
-		# Assume mingw, use "-static"
-		set(CMAKE_CXX_STANDARD_LIBRARIES "-static ${CMAKE_CXX_STANDARD_LIBRARIES}")
-	elseif(NOT CMAKE_SYSTEM_NAME STREQUAL SunOS)
-		set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CXX_STANDARD_LIBRARIES}")
-	endif()
-elseif(MSVC)
+if(MSVC)
 	# /MT = Multithread, static version of the run-time library
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+elseif(WIN32)
+	# Assume mingw, use "-static"
+	set(CMAKE_CXX_STANDARD_LIBRARIES "-static ${CMAKE_CXX_STANDARD_LIBRARIES}")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+	set(CMAKE_CXX_STANDARD_LIBRARIES "-static-libgcc -static-libstdc++ ${CMAKE_CXX_STANDARD_LIBRARIES}")
 endif()
 
 if(WIN32)
