@@ -101,7 +101,7 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setParams
     DCB *dcb = new DCB();
     jboolean returnValue = JNI_FALSE;
     if(GetCommState(hComm, dcb)){
-        dcb->BaudRate = static_cast<BYTE>(baudRate);
+        dcb->BaudRate = static_cast<DWORD>(baudRate);
         dcb->ByteSize = static_cast<BYTE>(byteSize);
         dcb->StopBits = static_cast<BYTE>(stopBits);
         dcb->Parity = static_cast<BYTE>(parity);
