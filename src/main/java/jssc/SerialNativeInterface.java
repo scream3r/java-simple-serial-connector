@@ -34,8 +34,7 @@ import java.io.IOException;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "2.9";
-    private static final String libMinorSuffix = "4"; //since 0.9.0
+    private static final String libVersion = "2.9.4";
 
     /** Linux **/
     public static final int OS_LINUX = 0;
@@ -115,7 +114,7 @@ public class SerialNativeInterface {
         else
             osType = OS_UNKNOWN;
         try {
-            /**
+            /*
              * JSSC includes a small, platform-specific shared library and uses native-lib-loader for extraction.
              * - First, native-lib-loader will attempt to load this library from the system library path.
              * - Next, it will fallback to <code>jssc.boot.library.path</code>
@@ -154,33 +153,7 @@ public class SerialNativeInterface {
      * @since 0.8
      */
     public static String getLibraryVersion() {
-        return libVersion + "." + libMinorSuffix;
-    }
-
-    /**
-     * Get library base Version
-     *
-     * @return Library base version in "major.minor" format.   Was previously used for library versioning caching
-     * but is no longer used by the project.
-     *
-     * @since 0.9.0
-     */
-    @Deprecated
-    public static String getLibraryBaseVersion() {
         return libVersion;
-    }
-
-    /**
-     * Get library patch version
-     *
-     * @return Library patch version only (e.g. only "patch" from "major.minor.patch").  Was previously used for
-     * library versioning caching but is no longer used by the project.
-     *
-     * @since 0.9.0
-     */
-    @Deprecated
-    public static String getLibraryMinorSuffix() {
-        return libMinorSuffix;
     }
 
     /**
