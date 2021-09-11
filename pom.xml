@@ -60,6 +60,7 @@
     <plugin.animalsniffer.version>1.17</plugin.animalsniffer.version>
     <plugin.antrun.version>1.8</plugin.antrun.version>
     <plugin.assembly.version>3.1.1</plugin.assembly.version>
+    <plugin.build-helper-maven-version>3.2.0</plugin.build-helper-maven-version>
     <plugin.compiler.version>3.8.0</plugin.compiler.version>
     <plugin.enforcer.version>3.0.0-M3</plugin.enforcer.version>
     <plugin.jar.version>3.1.1</plugin.jar.version>
@@ -131,6 +132,28 @@
     </pluginManagement>
 
     <plugins>
+      <!-- Strip any qualifiers from version and expose the result as release.version property -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${plugin.build-helper-maven-version}</version>
+        <executions>
+          <execution>
+            <id>set-release-version</id>
+            <goals>
+              <goal>parse-version</goal>
+              <goal>regex-property</goal>
+            </goals>
+            <configuration>
+              <name>release.version</name>
+              <regex>.</regex>
+              <value>-</value>
+              <!--suppress UnresolvedMavenProperty -->
+              <replacement>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</replacement>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <!-- Warn about not fully supported java version -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -256,6 +279,7 @@
         <configuration>
           <reuseForks>false</reuseForks>
           <excludes>
+            <!--suppress UnresolvedMavenProperty -->
             <exclude>${maven.exclude.tests}</exclude>
           </excludes>
         </configuration>

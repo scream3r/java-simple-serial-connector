@@ -254,6 +254,8 @@
             <arg line="${ant.project.basedir}"/>
             <!-- Set the native lib output directory or leave blank to let CMake calculate -->
             <arg line="${cmake.generator.nativelibdir}"/>
+            <!-- Set the JSSC version to parameter -->
+            <arg line="-DJSSC_VERSION=&quot;${release.version}&quot;" />
             <!-- Pass-in maven's JAVA_HOME, helps resolve jni.h -->
             <arg line="-DJAVA_HOME=&quot;${java.home}&quot;"/>
             <!-- Final generator argument should be blank or one of:
