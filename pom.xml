@@ -36,14 +36,6 @@
     <url>https://github.com/java-native/jssc</url>
   </scm>
 
-  <repositories>
-    <repository>
-      <id>maven.scijava.org</id>
-      <name>SciJava</name>
-      <url>https://maven.scijava.org/content/groups/public/</url>
-    </repository>
-  </repositories>
-
   <properties>
     <target.java.version>6</target.java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
