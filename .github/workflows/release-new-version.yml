@@ -1,0 +1,110 @@
+name: Release New Version
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: 'Release version'
+        required: false
+
+env:
+  MAVEN_OPTS: -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+  JAVA_TOOL_OPTIONS: -Duser.name=io.github.java-native
+  GITHUB_BOT_NAME: github-actions
+  GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+
+jobs:
+  maven-central-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: git config --global user.email "${GITHUB_BOT_EMAIL}"
+      - run: git config --global user.name "${GITHUB_BOT_NAME}"
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+          distribution: temurin
+          server-id: ossrh
+          server-username: OSSRH_TOKEN_USERNAME
+          server-password: OSSRH_TOKEN_PASSWORD
+          gpg-private-key: ${{ secrets.JAVA_NATIVE_PGP_KEY }}
+          gpg-passphrase: PGP_KEY_PASSPHRASE
+      - name: Set release version if provided as input
+        if: github.event.inputs.releaseVersion != ''
+        run: echo "VERSIONS=-DreleaseVersion=${{ github.event.inputs.releaseVersion }}" >> $GITHUB_ENV
+      - name: Publish artifacts to Maven Central
+        run: mvn -B release:prepare release:perform -P package,maven-central-release ${VERSIONS}
+        env:
+          OSSRH_TOKEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
+          OSSRH_TOKEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
+          PGP_KEY_PASSPHRASE: ${{ secrets.JAVA_NATIVE_PGP_KEY_PASSPHRASE }}
+      - run: echo "releaseTag=$(git tag --points-at HEAD^)" >> $GITHUB_ENV
+      - run: echo "releaseVersion=$(echo ${{ env.releaseTag }} | cut -c2-)" >> $GITHUB_ENV
+      - name: Push changes back to repo
+        run: git push && git push --tags --force
+    outputs:
+      releaseTag: ${{ env.releaseTag }}
+      releaseVersion: ${{ env.releaseVersion }}
+
+  github-release:
+    runs-on: ubuntu-latest
+    needs: maven-central-release
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.maven-central-release.outputs.releaseTag }}
+      - run: git config --global user.email "${GITHUB_BOT_EMAIL}"
+      - run: git config --global user.name "${GITHUB_BOT_NAME}"
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+          distribution: temurin
+      - name: Build jar with dependencies included
+        run: mvn -B install -Ppackage,jar-with-dependencies
+      - name: Publish as release
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ needs.maven-central-release.outputs.releaseVersion }}
+          tag: ${{ needs.maven-central-release.outputs.releaseTag }}
+          allowUpdates: true
+          artifacts: target/*.jar
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  update-readme:
+    runs-on: ubuntu-latest
+    needs: maven-central-release
+    env:
+      ver: ${{ needs.maven-central-release.outputs.releaseVersion }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+            git config --global user.email "${GITHUB_BOT_EMAIL}"
+            git config --global user.name "${GITHUB_BOT_NAME}"
+      - run: |
+            sed -i "/<artifactId>jssc<\/artifactId>/{n;s/<version>.*<\/version>/<version>${ver}<\/version>/}" README.md
+            sed -i'.bak' -e "s/java-native:jssc:[A-Za-z0-9.-]*/java-native:jssc:${ver}/g" README.md
+      - run: |
+          if [ $(git ls-files --modified) ]; then
+            git commit --all --message "Update versions in source files after new release" && git pull --rebase && git push
+          fi
+
+  update-wiki:
+    runs-on: ubuntu-latest
+    needs: maven-central-release
+    env:
+      ver: ${{ needs.maven-central-release.outputs.releaseVersion }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: ${{github.repository}}.wiki
+      - run: |
+          git config --global user.email "${GITHUB_BOT_EMAIL}"
+          git config --global user.name "${GITHUB_BOT_NAME}"
+      - run: |
+          sed -i "/<artifactId>jssc<\/artifactId>/{n;s/<version>.*<\/version>/<version>${ver}<\/version>/}" Add-Dependency.md
+          sed -i'.bak' -e "s/java-native:jssc:[A-Za-z0-9.-]*/java-native:jssc:${ver}/g" Add-Dependency.md
+      - run: |
+          if [ $(git ls-files --modified) ]; then
+            git commit --all --message "Update wiki with latest version released to Maven Central" && git pull --rebase && git push
+          fi

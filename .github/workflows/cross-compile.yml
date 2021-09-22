@@ -1,0 +1,188 @@
+name: Cross-compile native libraries
+on: workflow_dispatch
+
+env:
+  MAVEN_OPTS: -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+  GITHUB_BOT_NAME: github-actions
+  GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: echo "precompiled_branch=$(git branch --show-current)-precompiled-natives" >> $GITHUB_ENV
+      - name: Create branch for precompiled natives
+        run: git checkout -b ${{ env.precompiled_branch }}
+      - name: Sync SerialNativeInterface version with the project pom version
+        run: |
+          FILE=src/main/java/jssc/SerialNativeInterface.java
+          RELEASE_VERSION=$(mvn validate help:evaluate -Dexpression=release.version -q -DforceStdout)
+          sed -i "s/private static final String libVersion =.*/private static final String libVersion = \"${RELEASE_VERSION}\";/" ${FILE}
+          if [ $(git ls-files --modified) ]; then
+            git config --global user.email "${GITHUB_BOT_EMAIL}"
+            git config --global user.name "${GITHUB_BOT_NAME}"
+            git commit ${FILE} --message "Update version in source files before building native libraries"
+          fi
+      - run: echo "rev=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      - run: git push --force origin HEAD
+    outputs:
+      precompiled_branch: ${{ env.precompiled_branch }}
+      base_rev: ${{ env.rev }}
+
+  linux-windows:
+    runs-on: ubuntu-20.04
+    needs: create-branch
+    strategy:
+      matrix:
+        include:
+          - target: linux_32
+            profile: x86
+            image: ubuntu:14.04
+            packages: cmake3 g++-multilib
+
+          - target: linux_64
+            profile: x86_64
+            image: ubuntu:14.04
+            packages: cmake3 g++
+
+          - target: linux_arm
+            profile: armhf
+            image: ubuntu:14.04
+            packages: cmake3 g++-arm-linux-gnueabihf
+
+          - target: linux_arm64
+            profile: aarch64
+            image: ubuntu:14.04
+            packages: cmake3 g++-aarch64-linux-gnu
+
+          - target: linux_ppc
+            profile: ppc64
+            image: ubuntu:14.04
+            packages: cmake3 g++-powerpc64le-linux-gnu
+
+          - target: windows_32
+            profile: mingw32
+            image: ubuntu:20.04
+            packages: file cmake mingw-w64 binutils-mingw-w64-i686
+
+          - target: windows_64
+            profile: mingw64
+            image: ubuntu:20.04
+            packages: file cmake mingw-w64
+
+          - target: windows_arm64
+            profile: mingwaarch64
+            image: ubuntu:20.04
+            packages: file cmake clang
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Pull docker images
+        run: docker pull ${{ matrix.image }}
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - name: Build for ${{ matrix.target }} in ${{ matrix.image }}
+        run: |
+          export HOST_JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+          export HOST_MAVEN_HOME=$(dirname $(dirname $(readlink -f $(which mvn))))
+          docker run --rm --workdir=/jssc \
+                --volume $PWD:/jssc \
+                --volume $HOST_JAVA_HOME:/jdk \
+                --volume $HOST_MAVEN_HOME:/mvn \
+                --env JAVA_HOME=/jdk \
+                --env MAVEN_OPTS=${MAVEN_OPTS} \
+                ${{ matrix.image }} \
+                bash -c \
+                  ' apt-get update && apt-get install --yes ${{ matrix.packages }} && \
+                  /mvn/bin/mvn -B clean install -P ${{ matrix.profile }} '
+
+      - name: Push recompiled binaries
+        run: |
+          git config --global user.email "${GITHUB_BOT_EMAIL}"
+          git config --global user.name "${GITHUB_BOT_NAME}"
+          git fetch && git checkout -t origin/${{ needs.create-branch.outputs.precompiled_branch }}
+          git add src/main/resources-precompiled/**
+          git commit --allow-empty -m "Precompiled natives (@${{ needs.create-branch.outputs.base_rev }}) for ${{ matrix.target }}"
+          while  git pull --rebase && ! git push; do sleep 5; done
+
+  macos:
+    runs-on: macos-10.15
+    needs: create-branch
+    strategy:
+      matrix:
+        include:
+          - target: osx_64
+            profile: 'x86_64'
+            macos-deployment-target: 10.8
+            sdk-version: MacOSX10.9.sdk
+
+          - target: osx_arm64
+            profile: 'aarch64'
+            macos-deployment-target: 11.0
+            sdk-version: MacOSX11.0.sdk
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_12.2.app/Contents/Developer
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - name: Get oldest supported SDK
+        if: ${{ matrix.sdk-version == 'MacOSX10.9.sdk' }}
+        run: |
+          wget -qO- https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.9.sdk.tar.xz \
+            | tar -xjv -C /Applications/Xcode_12.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+
+      - name: Set SDK version
+        run: |
+          export MACOSX_DEPLOYMENT_TARGET=${{ matrix.macos-deployment-target }}
+          export SDKROOT=${{ env.DEVELOPER_DIR }}/Platforms/MacOSX.platform/Developer/SDKs/${{ matrix.sdk-version }}
+      - name: Build with Maven
+        run: mvn -B clean install -P ${{ matrix.profile }}
+
+      - name: Push recompiled binaries
+        run: |
+          git config --global user.email "${GITHUB_BOT_EMAIL}"
+          git config --global user.name "${GITHUB_BOT_NAME}"
+          git fetch && git checkout -t origin/${{ needs.create-branch.outputs.precompiled_branch }}
+          git add src/main/resources-precompiled/**
+          git commit --allow-empty -m "Precompiled natives (@${{ needs.create-branch.outputs.base_rev }}) for ${{ matrix.target }}"
+          while  git pull --rebase && ! git push; do sleep 5; done
+
+  solaris:
+    runs-on: macos-latest
+    needs: create-branch
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build on solaris
+        uses: vmactions/solaris-vm@v0.0.3
+        with:
+          envs: 'MAVEN_OPTS GITHUB_BOT_EMAIL GITHUB_BOT_NAME'
+          run: |
+            wget -qO- https://download.bell-sw.com/java/11.0.12+7/bellsoft-jdk11.0.12+7-solaris-x64-lite.tar.gz | tar xvf -
+            wget -qO- https://downloads.apache.org/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz | tar xvfz -
+            pkg install gcc git cmake
+            JAVA_HOME=./jdk-11.0.12-lite ./apache-maven-3.8.1/bin/mvn -B clean install -P x86 -DskipTests
+            JAVA_HOME=./jdk-11.0.12-lite ./apache-maven-3.8.1/bin/mvn -B clean install -P x86_64 -DskipTests
+            git config --global user.email "${GITHUB_BOT_EMAIL}"
+            git config --global user.name "${GITHUB_BOT_NAME}"
+            git fetch && git checkout -t origin/${{ needs.create-branch.outputs.precompiled_branch }}
+            git add src/main/resources-precompiled/**
+            git commit --allow-empty -m "Precompiled natives (@${{ needs.create-branch.outputs.base_rev }}) for Solaris"
+            while  git pull --rebase && ! git push; do sleep 5; done
