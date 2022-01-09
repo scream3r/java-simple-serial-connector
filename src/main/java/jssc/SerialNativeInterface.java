@@ -339,7 +339,7 @@ public class SerialNativeInterface {
      * Send Break signal for set duration
      * 
      * @param handle handle of opened port
-     * @param duration duration of Break signal
+     * @param duration duration of Break signal, in milliseconds
      * @return If the operation is successfully completed, the method returns true, otherwise false
      *
      * @since 0.8

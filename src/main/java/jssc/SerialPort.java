@@ -922,7 +922,7 @@ public class SerialPort {
     /**
      * Send Break singnal for set duration
      *
-     * @param duration duration of Break signal
+     * @param duration duration of Break signal, in milliseconds
      *
      * @return If the operation is successfully completed, the method returns true, otherwise false
      * 
