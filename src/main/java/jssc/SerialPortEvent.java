@@ -213,13 +213,13 @@ public class SerialPortEvent {
     }
 
     /**
-     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_RLSD</code>
+     * Convenience method to check if <code>getEventType()</code> is <code>SerialPort.MASK_BREAK</code>
      *
      * @return true or false
      */
     @SuppressWarnings("unused")
     public boolean isBREAK() {
-        return eventType == SerialPort.MASK_RLSD;
+        return eventType == SerialPort.MASK_BREAK;
     }
 
     /**
