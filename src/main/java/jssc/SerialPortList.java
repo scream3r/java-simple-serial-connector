@@ -314,7 +314,7 @@ public class SerialPortList {
         }
         TreeSet<String> ports = new TreeSet<String>(comparator);
         for(String portName : portNames){
-            if(pattern.matcher(portName).find()){
+            if(portName != null && pattern.matcher(portName).find()){
                 ports.add(portName);
             }
         }
