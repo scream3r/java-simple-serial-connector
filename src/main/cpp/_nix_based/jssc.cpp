@@ -797,7 +797,9 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
   (JNIEnv *env, jobject, jlong portHandle) {
 
     jclass intClass = env->FindClass("[I");
+    if( intClass == NULL ) return NULL;
     jobjectArray returnArray = env->NewObjectArray(sizeof(events)/sizeof(jint), intClass, NULL);
+    if( returnArray == NULL ) return NULL;
 
     /*Input buffer*/
     jint bytesCountIn = 0;
@@ -890,8 +892,11 @@ JNIEXPORT jobjectArray JNICALL Java_jssc_SerialNativeInterface_waitEvents
         forEnd: {
             returnValues[0] = events[i];
             jintArray singleResultArray = env->NewIntArray(2);
+            if( singleResultArray == NULL ) return NULL;
             env->SetIntArrayRegion(singleResultArray, 0, 2, returnValues);
+            if( env->ExceptionCheck() ) return NULL;
             env->SetObjectArrayElement(returnArray, i, singleResultArray);
+            if( env->ExceptionCheck() ) return NULL;
         };
     }
     return returnArray;
