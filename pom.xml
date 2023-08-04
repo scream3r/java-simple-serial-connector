@@ -481,6 +481,14 @@
       </properties>
     </profile>
 
+    <!-- Cross compile for default target in Dockcross container -->
+    <profile>
+      <id>dockcross</id>
+      <properties>
+        <os.target.toolchain>Dockcross</os.target.toolchain>
+      </properties>
+    </profile>
+
     <!-- Cross compile for aarch64 -->
     <profile>
       <id>aarch64</id>
