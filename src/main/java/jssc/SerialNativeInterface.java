@@ -34,7 +34,7 @@ import java.io.IOException;
  */
 public class SerialNativeInterface {
 
-    private static final String libVersion = "2.9.4";
+    private static final String libVersion = "2.9.5";
 
     /** Linux **/
     public static final int OS_LINUX = 0;
