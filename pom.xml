@@ -4,7 +4,7 @@
 
   <groupId>io.github.java-native</groupId>
   <artifactId>jssc</artifactId>
-  <version>2.9.5</version>
+  <version>2.9.6-SNAPSHOT</version>
 
   <name>Java Simple Serial Connector</name>
   <description>
@@ -32,7 +32,7 @@
     <connection>scm:git:https://github.com/java-native/jssc.git</connection>
     <developerConnection>scm:git:git@github.com:java-native/jssc.git</developerConnection>
     <url>https://github.com/java-native/jssc</url>
-    <tag>v2.9.5</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
