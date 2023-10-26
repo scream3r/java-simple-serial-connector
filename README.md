@@ -36,4 +36,4 @@ dependencies {
 
 ### Developers
 * [Compile this project from source](../../wiki/compiling)
-* [Chat on Slack](https://join.slack.com/t/java-native/shared_invite/zt-7oy9i5j8-yje5mtdLcLBtqhYWcMsDOg)
+* [Chat on Discord](https://discord.gg/RBsUfE9sX9)
