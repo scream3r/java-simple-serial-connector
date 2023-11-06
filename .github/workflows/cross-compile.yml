@@ -105,7 +105,7 @@ jobs:
                 --env MAVEN_OPTS=${MAVEN_OPTS} \
                 ${{ matrix.image }} \
                 bash -c \
-                  'apt-get update && apt-get install --yes cmake maven openjdk-11-jdk-headless && \
+                  'apt-get update && apt-get install --yes maven openjdk-11-jdk-headless && \
                    mvn -B clean install -P dockcross \
                     -Dos.target.name=${{ matrix.os_target_name }} \
                     -Dos.target.arch=${{ matrix.os_target_arch }} \
