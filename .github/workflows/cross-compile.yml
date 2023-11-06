@@ -193,4 +193,4 @@ jobs:
             git fetch && git checkout -t origin/${{ needs.create-branch.outputs.precompiled_branch }}
             git add src/main/resources-precompiled/**
             git commit --allow-empty -m "Precompiled natives (@${{ needs.create-branch.outputs.base_rev }}) for Solaris"
-            while  git pull --rebase && ! git push; do sleep 5; done
+            until git pull --rebase && git push; do sleep 5; done
