@@ -105,7 +105,7 @@ jobs:
                 --env MAVEN_OPTS=${MAVEN_OPTS} \
                 ${{ matrix.image }} \
                 bash -c \
-                  'apt-get update && apt-get install --yes cmake maven openjdk-11-jdk-headless && \
+                  'apt-get update && apt-get install --yes maven openjdk-11-jdk-headless && \
                    mvn -B clean install -P dockcross \
                     -Dos.target.name=${{ matrix.os_target_name }} \
                     -Dos.target.arch=${{ matrix.os_target_arch }} \
@@ -193,4 +193,4 @@ jobs:
             git fetch && git checkout -t origin/${{ needs.create-branch.outputs.precompiled_branch }}
             git add src/main/resources-precompiled/**
             git commit --allow-empty -m "Precompiled natives (@${{ needs.create-branch.outputs.base_rev }}) for Solaris"
-            while  git pull --rebase && ! git push; do sleep 5; done
+            until git pull --rebase && git push; do sleep 5; done
