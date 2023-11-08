@@ -22,9 +22,11 @@
  * e-mail: scream3r.org@gmail.com
  * web-site: http://scream3r.org | http://code.google.com/p/java-simple-serial-connector/
  */
+#include <assert.h>
 #include <limits.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <termios.h>
@@ -527,11 +529,21 @@ JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_setDTR
  */
 JNIEXPORT jboolean JNICALL Java_jssc_SerialNativeInterface_writeBytes
   (JNIEnv *env, jobject, jlong portHandle, jbyteArray buffer){
+    jboolean ret = JNI_FALSE;
     jbyte* jBuffer = env->GetByteArrayElements(buffer, JNI_FALSE);
     jint bufferSize = env->GetArrayLength(buffer);
     jint result = write(portHandle, jBuffer, (size_t)bufferSize);
+    if( result == -1 ){
+        int err = errno; /*bakup errno*/
+        jclass exClz = env->FindClass("java/io/IOException");
+        assert(exClz != NULL);
+        env->ThrowNew(exClz, strerror(err));
+        goto Finally;
+    }
+    ret = (result == bufferSize) ? JNI_TRUE : JNI_FALSE;
+Finally:
     env->ReleaseByteArrayElements(buffer, jBuffer, 0);
-    return result == bufferSize ? JNI_TRUE : JNI_FALSE;
+    return ret;
 }
 
 /**

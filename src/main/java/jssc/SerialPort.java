@@ -24,6 +24,7 @@
  */
 package jssc;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 
@@ -408,7 +409,11 @@ public class SerialPort {
      */
     public boolean writeBytes(byte[] buffer) throws SerialPortException {
         checkPortOpened("writeBytes()");
-        return serialInterface.writeBytes(portHandle, buffer);
+        try {
+            return serialInterface.writeBytes(portHandle, buffer);
+        } catch(IOException ex) {
+            throw SerialPortException.wrapNativeException(ex, this, "writeBytes");
+        }
     }
 
     /**
