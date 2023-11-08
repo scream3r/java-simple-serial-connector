@@ -135,13 +135,15 @@ public class VirtualPortRule implements TestRule {
       public void run() {
 
         try {
-          final ProcessBuilder processBuilder = new ProcessBuilder(asList(
-              "socat",
-              "pty,link=" + VirtualPortRule.this.virtualCom1.getAbsolutePath() + ",rawer,echo=0",
-              "pty,link=" + VirtualPortRule.this.virtualCom2.getAbsolutePath() + ",rawer,echo=0"
-          ));
+          List cmds = asList(
+                  "socat",
+                  "pty,link=" + VirtualPortRule.this.virtualCom1.getAbsolutePath() + ",rawer,echo=0",
+                  "pty,link=" + VirtualPortRule.this.virtualCom2.getAbsolutePath() + ",rawer,echo=0"
+          );
+          final ProcessBuilder processBuilder = new ProcessBuilder(cmds);
           processBuilder.redirectErrorStream(true);
 
+          LOG.info("Process starting: {}", cmds);
           this.process = processBuilder.start();
           LOG.info("Process started! [{}], ports: [{}] // [{}].", this.process, VirtualPortRule.this.virtualCom1.getName(),
               VirtualPortRule.this.virtualCom2.getName());
