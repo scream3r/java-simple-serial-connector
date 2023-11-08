@@ -27,11 +27,11 @@ import java.io.OutputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import jssc.SerialNativeInterface;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -60,8 +60,8 @@ public class VirtualPortRule implements TestRule {
 
   @Override
   public Statement apply(final Statement base, final Description description) {
-    final String osName = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
-    if (!osName.startsWith("linux")) {
+    // is windows
+    if (SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS) {
       return new Statement() {
         @Override
         public void evaluate() throws Throwable {
@@ -70,7 +70,7 @@ public class VirtualPortRule implements TestRule {
       };
     }
 
-    // is linux.
+    // is *nix
 
     initUnix(description);
 
