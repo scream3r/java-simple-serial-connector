@@ -60,6 +60,18 @@ jobs:
             os_target_bitness: 64
             image: docker.io/dockcross/linux-arm64-lts
 
+          - target: linux_riscv32
+            os_target_name: linux
+            os_target_arch: riscv32
+            os_target_bitness: 32
+            image: docker.io/dockcross/linux-riscv32
+
+          - target: linux_riscv64
+            os_target_name: linux
+            os_target_arch: riscv64
+            os_target_bitness: 64
+            image: docker.io/dockcross/linux-riscv64
+
           - target: linux_ppc
             os_target_name: linux
             os_target_arch: ppc_64

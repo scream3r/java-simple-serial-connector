@@ -67,6 +67,17 @@
         <condition property="nativelibdir.suffix" value="arm">
             <equals arg1="${os.target.arch}" arg2="arm_32"/>
         </condition>
+
+        <!-- "riscv32"-->
+        <condition property="nativelibdir.suffix" value="riscv32">
+            <equals arg1="${os.target.arch}" arg2="riscv32"/>
+        </condition>
+
+        <!-- "riscv64"-->
+        <condition property="nativelibdir.suffix" value="riscv64">
+            <equals arg1="${os.target.arch}" arg2="riscv64"/>
+        </condition>
+
         <!-- "ppc_64" <=> "ppc" -->
         <condition property="nativelibdir.suffix" value="ppc">
             <equals arg1="${os.target.arch}" arg2="ppc_64"/>
