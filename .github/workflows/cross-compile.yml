@@ -181,28 +181,3 @@ jobs:
           git add src/main/resources-precompiled/**
           git commit --allow-empty -m "Precompiled natives (@${{ needs.create-branch.outputs.base_rev }}) for ${{ matrix.target }}"
           while  git pull --rebase && ! git push; do sleep 5; done
-
-  solaris:
-    runs-on: macos-12
-    needs: create-branch
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Build on solaris
-        uses: vmactions/solaris-vm@v0
-        with:
-          envs: 'MAVEN_OPTS GITHUB_BOT_EMAIL GITHUB_BOT_NAME'
-          run: |
-            wget -qO- https://download.bell-sw.com/java/11.0.12+7/bellsoft-jdk11.0.12+7-solaris-x64-lite.tar.gz | tar xvf -
-            wget -qO- https://archive.apache.org/dist/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz | tar xvfz -
-            
-            pkg install gcc git cmake
-            JAVA_HOME=./jdk-11.0.12-lite ./apache-maven-3.8.8/bin/mvn -B clean install -P x86 -DskipTests
-            JAVA_HOME=./jdk-11.0.12-lite ./apache-maven-3.8.8/bin/mvn -B clean install -P x86_64 -DskipTests
-            git config --global user.email "${GITHUB_BOT_EMAIL}"
-            git config --global user.name "${GITHUB_BOT_NAME}"
-            git fetch && git checkout -t origin/${{ needs.create-branch.outputs.precompiled_branch }}
-            git add src/main/resources-precompiled/**
-            git commit --allow-empty -m "Precompiled natives (@${{ needs.create-branch.outputs.base_rev }}) for Solaris"
-            until git pull --rebase && git push; do sleep 5; done
