@@ -136,7 +136,7 @@ public class VirtualPortRule implements TestRule {
 
         try {
           final ProcessBuilder processBuilder = new ProcessBuilder(asList(
-              "/usr/bin/socat",
+              "socat",
               "pty,link=" + VirtualPortRule.this.virtualCom1.getAbsolutePath() + ",rawer,echo=0",
               "pty,link=" + VirtualPortRule.this.virtualCom2.getAbsolutePath() + ",rawer,echo=0"
           ));
