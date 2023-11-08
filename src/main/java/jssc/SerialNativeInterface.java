@@ -277,8 +277,7 @@ public class SerialNativeInterface {
      * 
      * @return If the operation is successfully completed, the method returns true, otherwise false
      */
-    public native boolean writeBytes(long handle, byte[] buffer)
-        throws java.io.IOException;
+    public native boolean writeBytes(long handle, byte[] buffer) throws IOException;
 
     /**
      * Get bytes count in buffers of port

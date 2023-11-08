@@ -24,6 +24,7 @@
  */
 package jssc;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 
@@ -406,9 +407,13 @@ public class SerialPort {
      * 
      * @throws SerialPortException if exception occurred
      */
-    public boolean writeBytes(byte[] buffer) throws SerialPortException, java.io.IOException {
+    public boolean writeBytes(byte[] buffer) throws SerialPortException {
         checkPortOpened("writeBytes()");
-        return serialInterface.writeBytes(portHandle, buffer);
+        try {
+            return serialInterface.writeBytes(portHandle, buffer);
+        } catch(IOException ex) {
+            throw SerialPortException.wrapNativeException(ex, this, "writeBytes");
+        }
     }
 
     /**
@@ -422,7 +427,7 @@ public class SerialPort {
      *
      * @since 0.8
      */
-    public boolean writeByte(byte singleByte) throws SerialPortException, java.io.IOException {
+    public boolean writeByte(byte singleByte) throws SerialPortException {
         checkPortOpened("writeByte()");
         return writeBytes(new byte[]{singleByte});
     }
@@ -438,7 +443,7 @@ public class SerialPort {
      *
      * @since 0.8
      */
-    public boolean writeString(String string) throws SerialPortException, java.io.IOException {
+    public boolean writeString(String string) throws SerialPortException {
         checkPortOpened("writeString()");
         return writeBytes(string.getBytes());
     }
@@ -455,7 +460,7 @@ public class SerialPort {
      *
      * @since 2.8.0
      */
-    public boolean writeString(String string, String charsetName) throws SerialPortException, UnsupportedEncodingException, java.io.IOException {
+    public boolean writeString(String string, String charsetName) throws SerialPortException, UnsupportedEncodingException {
         checkPortOpened("writeString()");
         return writeBytes(string.getBytes(charsetName));
     }
@@ -471,7 +476,7 @@ public class SerialPort {
      *
      * @since 0.8
      */
-    public boolean writeInt(int singleInt) throws SerialPortException, java.io.IOException {
+    public boolean writeInt(int singleInt) throws SerialPortException {
         checkPortOpened("writeInt()");
         return writeBytes(new byte[]{(byte)singleInt});
     }
@@ -487,7 +492,7 @@ public class SerialPort {
      *
      * @since 0.8
      */
-    public boolean writeIntArray(int[] buffer) throws SerialPortException, java.io.IOException {
+    public boolean writeIntArray(int[] buffer) throws SerialPortException {
         checkPortOpened("writeIntArray()");
         byte[] byteArray = new byte[buffer.length];
         for(int i = 0; i < buffer.length; i++){

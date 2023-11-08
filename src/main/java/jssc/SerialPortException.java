@@ -67,6 +67,9 @@ public class SerialPortException extends Exception {
      */
     final public static String TYPE_INCORRECT_SERIAL_PORT = "Incorrect serial port";
 
+    /** Exception occurred in native code */
+    final public static String TYPE_NATIVE_EXCEPTION = "Native exception occurred: %s";
+
     /** Serial port object **/
     private SerialPort port;
     /** Method name **/
@@ -108,6 +111,10 @@ public class SerialPortException extends Exception {
         this.portName = portName;
         this.methodName = methodName;
         this.exceptionType = exceptionType;
+    }
+
+    public static SerialPortException wrapNativeException(Exception ex, SerialPort port, String methodName) {
+        return new SerialPortException(port, methodName, String.format(TYPE_NATIVE_EXCEPTION, ex.getLocalizedMessage()));
     }
 
     /**
