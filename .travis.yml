@@ -15,9 +15,6 @@ matrix:
   include:
     - os: linux
       addons:
-        hosts:
-          - jsscbuild
-        hostname: jsscbuild
         apt:
           packages:
             - g++
