@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -60,8 +61,8 @@ public class VirtualPortRule implements TestRule {
 
   @Override
   public Statement apply(final Statement base, final Description description) {
-    // is windows
-    if (SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS) {
+    // skip / prevent deadlock if socat isn't available
+    if (SerialNativeInterface.getOsType() == SerialNativeInterface.OS_WINDOWS || !execute("socat", "-V")) {
       return new Statement() {
         @Override
         public void evaluate() throws Throwable {
@@ -69,8 +70,6 @@ public class VirtualPortRule implements TestRule {
         }
       };
     }
-
-    // is *nix
 
     initUnix(description);
 
@@ -135,7 +134,7 @@ public class VirtualPortRule implements TestRule {
       public void run() {
 
         try {
-          List cmds = asList(
+          List<String> cmds = asList(
                   "socat",
                   "pty,link=" + VirtualPortRule.this.virtualCom1.getAbsolutePath() + ",rawer,echo=0",
                   "pty,link=" + VirtualPortRule.this.virtualCom2.getAbsolutePath() + ",rawer,echo=0"
@@ -174,6 +173,29 @@ public class VirtualPortRule implements TestRule {
 
   public File getVirtualCom2() {
     return this.virtualCom2;
+  }
+
+  /**
+   * Executes the provided command and waits for a zero (success) or non-zero (failure) return code
+   */
+  private static boolean execute(String ... commands) {
+    LOG.debug("Executing: {}", Arrays.toString(commands));
+    try {
+      // Create and execute our new process
+      Process p = Runtime.getRuntime().exec(commands);
+      // Consume output to prevent deadlock
+      while (p.getInputStream().read() != -1) {}
+      p.waitFor();
+      return p.exitValue() == 0;
+    }
+    catch(InterruptedException ex) {
+      LOG.warn("InterruptedException waiting for a return value from {}", Arrays.toString(commands), ex);
+    }
+    catch(IOException ex) {
+      LOG.error("IOException executing: {}", Arrays.toString(commands), ex);
+    }
+
+    return false;
   }
 
   @Override
