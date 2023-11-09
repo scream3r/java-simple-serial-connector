@@ -1,0 +1,110 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  ubuntu:
+    runs-on: [ubuntu-latest]
+    strategy:
+      matrix:
+        - target: linux_32
+          os_target_name: linux
+          os_target_arch: x86_32
+          os_target_bitness: 32
+          env: PROFILE=x86
+          packages: g++-multilib
+
+        - target: linux_64
+          os_target_name: linux
+          os_target_arch: x86_64
+          os_target_bitness: 64
+          env: PROFILE=x86_64
+          packages: g++-
+
+        - target: linux_arm
+          os_target_name: linux
+          os_target_arch: arm_32
+          os_target_bitness: 32
+          env: PROFILE=armhf
+          packages: g++-arm-linux-gnueabihf
+
+        - target: linux_arm64
+          os_target_name: linux
+          os_target_arch: aarch_64
+          os_target_bitness: 64
+          env: PROFILE=aarch64
+          packages: g++-aarch64-linux-gnu
+
+        - target: linux_riscv32
+          os_target_name: linux
+          os_target_arch: riscv32
+          env: PROFILE=riscv32
+          packages: g++-riscv32-linux-gnu
+
+        - target: linux_riscv64
+          os_target_name: linux
+          os_target_arch: riscv64
+          os_target_bitness: 64
+          env: PROFILE=riscv64
+          packages: g++-riscv64-linux-gnu
+
+        - target: linux_ppc
+          os_target_name: linux
+          os_target_arch: ppc_64
+          os_target_bitness: 64
+          env: PROFILE=ppc64
+          packages: g++-powerpc64le-linux-gnu
+
+        - target: windows_32
+          os_target_name: windows
+          os_target_arch: x86_32
+          os_target_bitness: 32
+          env: PROFILE=mingw32
+          packages: g++-mingw-w64-i686
+
+        - target: windows_64
+          os_target_name: windows
+          os_target_arch: x86_64
+          os_target_bitness: 64
+          env: PROFILE=mingw64
+          packages: g++-mingw-w64-x86-64
+
+        - target: windows_arm64
+          os_target_name: windows
+          os_target_arch: aarch_64
+          os_target_bitness: 64
+          env: PROFILE=mingwaarch64
+          packages: clang
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - run: mvn -P "$PROFILE" --batch-mode
+
+  macos:
+    runs-on: [macos-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - run: mvn -P "$PROFILE" --batch-mode
+
+  windows:
+    runs-on: [windows-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - run: mvn -P "$PROFILE" --batch-mode
