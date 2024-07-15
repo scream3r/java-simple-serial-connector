@@ -1,3 +1,7 @@
+# This repo is not being maintained
+
+* As of 2024 https://github.com/java-native/jssc is the most alive fork *
+
 jSSC-2.8.0 Release version (24.01.2014)
 
 This version contains native libs for Windows(x86, x86-64), Linux(x86, x86-64, ARM soft & hard float), Solaris(x86, x86-64), Mac OS X(x86, x86-64, PPC, PPC64).
